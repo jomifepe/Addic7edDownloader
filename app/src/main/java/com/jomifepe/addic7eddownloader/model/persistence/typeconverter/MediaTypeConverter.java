@@ -1,4 +1,4 @@
-package com.jomifepe.addic7eddownloader.model.persistence;
+package com.jomifepe.addic7eddownloader.model.persistence.typeconverter;
 
 import android.arch.persistence.room.TypeConverter;
 

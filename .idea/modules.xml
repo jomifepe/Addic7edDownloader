@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Addict7edDownloader-android.iml" filepath="$PROJECT_DIR$/Addict7edDownloader-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Addic7edDownloader.iml" filepath="$PROJECT_DIR$/Addic7edDownloader.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -2,6 +2,8 @@ package com.jomifepe.addic7eddownloader.util;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
+import android.util.Pair;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,45 +14,75 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Locale;
 
-import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class Network {
-    public static class NetworkException extends Exception {}
-    public static class ErrorResponseCodeException extends NetworkException {}
+public class NetworkUtil {
+    public interface NetworkTaskCallback {
+        void onTaskCompleted(String result);
+        void onTaskFailed(String result);
+    }
 
-    public static class OkHTTPGETRequest extends AsyncTask<String, Void, String> {
-        private final OkHttpClient client = new OkHttpClient();
+    public static class OkHTTPGETRequest extends AsyncTask<String, Void, Pair<Boolean, String>> {
+        private final OkHttpClient client;
+        private NetworkTaskCallback callback;
+
+        public OkHTTPGETRequest() {
+            this.client = new OkHttpClient();
+        }
+
+        public OkHTTPGETRequest(NetworkTaskCallback callback) {
+            this();
+            this.callback = callback;
+        }
 
         @Override
-        protected String doInBackground(String... targetURL) {
+        protected Pair<Boolean, String> doInBackground(String... targetURL) {
             Request request = new Request.Builder()
                     .url(targetURL[0])
                     .header("User-Agent", Const.USER_AGENT)
                     .build();
 
-            Call call = client.newCall(request);
             try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                if (!response.isSuccessful()) {
+                    return null;
+                }
 
-                return response.body().string();
+                return new Pair<>(true, response.body().string());
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.d(getClass().getSimpleName(), "called for " + e.getClass());
+                return null;
             }
-
-            return null;
-        }
-    }
-
-    public static class FileDownload extends AsyncTask<String, Void, FileDownload.STATUS> {
-        public enum STATUS {
-            ERROR, SUCCESS
         }
 
         @Override
-        protected FileDownload.STATUS doInBackground(String... strings) {
+        protected void onPostExecute(Pair<Boolean, String> result) {
+            if (callback != null) {
+                if (result.first /* task successfull */) {
+                    callback.onTaskCompleted(result.second);
+                } else {
+                    callback.onTaskFailed(result.second);
+                }
+            } else {
+                super.onPostExecute(result);
+            }
+        }
+    }
+
+    public static class FileDownload extends AsyncTask<String, Void, Boolean> {
+        private NetworkTaskCallback callback;
+        private String result;
+
+        public FileDownload() {}
+
+        public FileDownload(NetworkTaskCallback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            String filename;
             try {
                 URL url = new URL(strings[0]);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -60,10 +92,10 @@ public class Network {
 
                 int responseCode = con.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK)
-                    return STATUS.ERROR;
+                    return false;
 
                 String contentDisposition = con.getHeaderField("Content-Disposition");
-                String filename = contentDisposition == null ?
+                result = filename = contentDisposition == null ?
                         "" : contentDisposition.replaceFirst("(?i)^.*filename=\"?([^\"]+)\"?.*$", "$1");
 
                 ReadableByteChannel rbc = Channels.newChannel(con.getInputStream());
@@ -75,10 +107,24 @@ public class Network {
                 fos.close();
                 rbc.close();
             } catch (IOException e) {
-                return STATUS.ERROR;
+                Log.d(getClass().getSimpleName(), "called for " + e.getClass());
+                return false;
             }
 
-            return STATUS.SUCCESS;
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (callback != null) {
+                if (success) {
+                    callback.onTaskCompleted(result);
+                } else {
+                    callback.onTaskFailed(result);
+                }
+            } else {
+                super.onPostExecute(success);
+            }
         }
     }
 
@@ -124,57 +170,4 @@ public class Network {
             }
         }
     }
-
-//        @Override
-//        protected Void doInBackground(String... strings) {
-//
-//            if(android.os.Debug.isDebuggerConnected())
-//                android.os.Debug.waitForDebugger();
-//
-//            HttpURLConnection con;
-//
-//            try {
-//                URL targetURL = new URL(strings[0]);
-//
-//                con = (HttpURLConnection) targetURL.openConnection();
-//                con.setRequestMethod("GET");
-//                con.setRequestProperty("User-Agent", Const.USER_AGENT);
-//                con.setRequestProperty("Referer", strings[1]);
-//                con.connect();
-//
-//                int responseCode = con.getResponseCode();
-//                if (responseCode != HttpURLConnection.HTTP_OK)
-//                    return null;
-//
-//                String contentDisposition = con.getHeaderField("Content-Disposition");
-//                String contentSplit[] = contentDisposition.split("filename=");
-//                String filename = contentSplit[1].replace("filename=", "").replace("\"", "").trim();
-//
-//                String folder = Environment.getExternalStorageDirectory() + File.separator + "Addic7edDownloader/";
-//                File directory = new File(folder);
-//
-//                if (!directory.exists()) {
-//                    directory.mkdirs();
-//                }
-//
-//                BufferedInputStream in = new BufferedInputStream(con.getInputStream(), 8192);
-//                FileOutputStream out = new FileOutputStream(String.format("%s%s", folder, filename));
-//
-//                int count;
-//                byte buffer[] = new byte[1024];
-//                while ((count = in.read(buffer,0,1024)) != -1) {
-//                    out.write(buffer, 0, count);
-//                }
-//
-//                out.flush();
-//                out.close();
-//                in.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            return null;
-//        }
-//    }
-
 }

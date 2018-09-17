@@ -1,7 +1,6 @@
 package com.jomifepe.addic7eddownloader.ui;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +9,6 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 
 import com.jomifepe.addic7eddownloader.R;
-import com.jomifepe.addic7eddownloader.util.ErrorUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        new ErrorUtils.DefaultExceptionHandler(this);
+//        new ErrorUtil.DefaultExceptionHandler(this);
 
         ButterKnife.bind(this);
 

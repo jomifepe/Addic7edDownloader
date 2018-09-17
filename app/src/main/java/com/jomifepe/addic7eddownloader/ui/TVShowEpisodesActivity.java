@@ -13,9 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
@@ -122,7 +124,14 @@ public class TVShowEpisodesActivity
             ArrayList<Episode> listSubtraction = new ArrayList<>(fetchedEpisodes);
             listSubtraction.removeAll(listEpisodesAdapter.getList());
             if (listSubtraction.size() > 0) {
-                episodeViewModel.insert(listSubtraction);
+                Util.RunnableAsyncTask dbTask = new Util.RunnableAsyncTask(() ->
+                        episodeViewModel.insert(listSubtraction),
+                        ex -> {
+                            Log.d(this.getClass().getSimpleName(), ex.getMessage(), ex);
+                            Toast.makeText(getApplicationContext(), R.string.message_addic7edLoader_error, Toast.LENGTH_LONG).show();
+                        }
+                );
+                dbTask.execute();
             }
             progressBar.setVisibility(View.GONE);
         }

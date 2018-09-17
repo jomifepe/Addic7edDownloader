@@ -1,14 +1,13 @@
 package com.jomifepe.addic7eddownloader.model;
 
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.jomifepe.addic7eddownloader.model.persistence.MediaTypeConverter;
+import com.jomifepe.addic7eddownloader.model.persistence.typeconverter.MediaTypeConverter;
 
 import java.util.Objects;
 

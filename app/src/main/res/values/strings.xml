@@ -15,4 +15,8 @@
     <string name="txtFilter" translatable="false">Filter</string>
     <string name="write_external_storage_rationale">External storage permission is needed in order to download subtitles from Addic7ed</string>
     <string name="notification_channel_name">addic7eddownloader_notification_channel</string>
+    <string name="message_network_error">Failed to perform request, check your internet connection</string>
+    <string name="subtitle_download_notification_title">Subtitle Download</string>
+    <string name="subtitle_download_notification_message">Downloader file: %s</string>
+    <string name="message_addic7edLoader_error">An unexpected error occurred while fetching data from Addic7ed</string>
 </resources>

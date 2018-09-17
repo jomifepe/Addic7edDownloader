@@ -10,6 +10,7 @@ import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Season;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
 import com.jomifepe.addic7eddownloader.model.TVShow;
+import com.jomifepe.addic7eddownloader.model.persistence.typeconverter.MediaTypeConverter;
 import com.jomifepe.addic7eddownloader.util.Const;
 
 @Database(version = 1, exportSchema = false,
@@ -25,16 +26,14 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public static AppDatabase getInMemoryDatabase(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = Room.inMemoryDatabaseBuilder(context.getApplicationContext(), AppDatabase.class)
-                    .allowMainThreadQueries().build();
+            INSTANCE = Room.inMemoryDatabaseBuilder(context.getApplicationContext(), AppDatabase.class).build();
         }
         return INSTANCE;
     }
 
     public static AppDatabase getFileDatabase(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Const.DATABASE_FILENAME)
-                    .allowMainThreadQueries().build();
+            INSTANCE = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, Const.DATABASE_FILENAME).build();
         }
         return INSTANCE;
     }

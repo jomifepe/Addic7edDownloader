@@ -1,6 +1,5 @@
 package com.jomifepe.addic7eddownloader.ui;
 
-import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +25,9 @@ import com.jomifepe.addic7eddownloader.model.viewmodel.TVShowViewModel;
 import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
 import com.jomifepe.addic7eddownloader.ui.adapter.TVShowsRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.Util;
+import com.nanotasks.BackgroundWork;
+import com.nanotasks.Completion;
+import com.nanotasks.Tasks;
 
 import java.util.ArrayList;
 
@@ -34,9 +37,11 @@ import butterknife.ButterKnife;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.AsyncTaskLoader;
+import android.widget.Toast;
 
 public class TVShowsFragment extends Fragment {
 
+    private final String TAG = TVShowsFragment.class.getSimpleName();
     private static final String PACKAGE_NAME = "com.jomifepe.addic7eddownloader.ui";
     public static final String EXTRA_TVSHOW = String.format("%s.TVSHOW", PACKAGE_NAME);
     private final int ADDIC7ED_LOADER_ID = Util.RANDOM.nextInt();
@@ -112,7 +117,15 @@ public class TVShowsFragment extends Fragment {
             ArrayList<TVShow> listSubtraction = new ArrayList<>(fetchedShows);
             listSubtraction.removeAll(listTVShowsRecyclerAdapter.getList());
             if (listSubtraction.size() > 0) {
-                tvShowViewModel.insert(listSubtraction);
+
+                Util.RunnableAsyncTask dbTask = new Util.RunnableAsyncTask(() ->
+                        tvShowViewModel.insert(listSubtraction),
+                        ex -> {
+                            Log.d(this.getClass().getSimpleName(), ex.getMessage(), ex);
+                            Toast.makeText(getContext(), R.string.message_addic7edLoader_error, Toast.LENGTH_LONG).show();
+                        }
+                );
+                dbTask.execute();
             }
             progressBarListTVShows.setVisibility(View.GONE);
         }

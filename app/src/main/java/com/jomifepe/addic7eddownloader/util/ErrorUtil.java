@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.Locale;
 
-public class ErrorUtils {
+public class ErrorUtil {
     public static class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler {
         private final String TAG = DefaultExceptionHandler.class.getSimpleName();
 

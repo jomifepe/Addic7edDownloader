@@ -1,18 +1,12 @@
 package com.jomifepe.addic7eddownloader.ui;
 
 import android.Manifest;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v7.app.ActionBar;
@@ -20,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -34,13 +29,11 @@ import com.jomifepe.addic7eddownloader.model.viewmodel.SubtitleViewModel;
 import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
 import com.jomifepe.addic7eddownloader.ui.adapter.TVShowSubtitlesRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.Const;
-import com.jomifepe.addic7eddownloader.util.Network;
+import com.jomifepe.addic7eddownloader.util.NetworkUtil;
 import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -120,7 +113,22 @@ public class TVShowSubtitlesActivity
             return;
         }
 
-        getSupportLoaderManager().initLoader(SUBTITLE_DOWDLOADER_LOADER_ID, null, subtitleDownloaderLoaderListener);
+        NetworkUtil.FileDownload fileDownload = new NetworkUtil.FileDownload(new NetworkUtil.NetworkTaskCallback() {
+            @Override
+            public void onTaskCompleted(String result) {
+                Util.Notification notification = new Util.Notification(
+                        TVShowSubtitlesActivity.this, Util.RANDOM.nextInt(), getString(R.string.subtitle_download_notification_title),
+                        String.format(Locale.getDefault(), getString(R.string.subtitle_download_notification_message), result));
+                notification.show();
+            }
+
+            @Override
+            public void onTaskFailed(String result) {
+                Toast.makeText(getApplicationContext(), R.string.message_network_error, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        fileDownload.execute(selectedSubtitle.getDownloadURL(), episode.getPageURL());
     }
 
     @Override
@@ -152,7 +160,14 @@ public class TVShowSubtitlesActivity
             ArrayList<Subtitle> listSubtraction = new ArrayList<>(fetchedSeasons);
             listSubtraction.removeAll(listSubtitlesAdapter.getList());
             if (listSubtraction.size() > 0) {
-                subtitleViewModel.insert(listSubtraction);
+                Util.RunnableAsyncTask dbTask = new Util.RunnableAsyncTask(() ->
+                        subtitleViewModel.insert(listSubtraction),
+                        ex -> {
+                            Log.d(this.getClass().getSimpleName(), ex.getMessage(), ex);
+                            Toast.makeText(getApplicationContext(), R.string.message_addic7edLoader_error, Toast.LENGTH_LONG).show();
+                        }
+                );
+                dbTask.execute();
             }
 
             progressBar.setVisibility(View.GONE);
@@ -162,28 +177,28 @@ public class TVShowSubtitlesActivity
         public void onLoaderReset(@NonNull Loader<ArrayList<Subtitle>> loader) {}
     };
 
-    private LoaderManager.LoaderCallbacks<Boolean> subtitleDownloaderLoaderListener = new LoaderManager.LoaderCallbacks<Boolean>() {
-
-        @NonNull
-        @Override
-        public Loader<Boolean> onCreateLoader(int id, @Nullable Bundle args) {
-            return new SubtitleDownloader(TVShowSubtitlesActivity.this, episode, selectedSubtitle);
-        }
-
-        @Override
-        public void onLoadFinished(@NonNull Loader<Boolean> loader, Boolean success) {
-            if (success) {
-                Util.Notification notification = new Util.Notification(TVShowSubtitlesActivity.this, Util.RANDOM.nextInt(),
-                        "Subtitle Download", "The subtitle was successfully downloaded");
-                notification.show();
-            } else {
-                Toast.makeText(getApplicationContext(), "Failed to download the subtitle", Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        public void onLoaderReset(@NonNull Loader<Boolean> loader) {}
-    };
+//    private LoaderManager.LoaderCallbacks<Boolean> subtitleDownloaderLoaderListener = new LoaderManager.LoaderCallbacks<Boolean>() {
+//
+//        @NonNull
+//        @Override
+//        public Loader<Boolean> onCreateLoader(int id, @Nullable Bundle args) {
+//            return new SubtitleDownloader(TVShowSubtitlesActivity.this, episode, selectedSubtitle);
+//        }
+//
+//        @Override
+//        public void onLoadFinished(@NonNull Loader<Boolean> loader, Boolean success) {
+//            if (success) {
+//                Util.Notification notification = new Util.Notification(TVShowSubtitlesActivity.this, Util.RANDOM.nextInt(),
+//                        "Subtitle Download", "The subtitle was successfully downloaded");
+//                notification.show();
+//            } else {
+//                Toast.makeText(getApplicationContext(), "Failed to download the subtitle", Toast.LENGTH_LONG).show();
+//            }
+//        }
+//
+//        @Override
+//        public void onLoaderReset(@NonNull Loader<Boolean> loader) {}
+//    };
 
     private static class Addic7edSubtitlesFetcher extends AsyncTaskLoader<ArrayList<Subtitle>> {
         private Episode episode;
@@ -200,33 +215,22 @@ public class TVShowSubtitlesActivity
         }
     }
 
-    private static class SubtitleDownloader extends AsyncTaskLoader<Boolean> {
-        Episode episode;
-        Subtitle subtitle;
-
-        public SubtitleDownloader(@NonNull Context context, Episode episode, Subtitle subtitle) {
-            super(context);
-            this.episode = episode;
-            this.subtitle = subtitle;
-        }
-
-        @Nullable
-        @Override
-        public Boolean loadInBackground() {
-            Network.FileDownload fileDownload = new Network.FileDownload();
-
-            try {
-                String refererURL = episode.getPageURL();
-                fileDownload.execute(subtitle.getDownloadURL(), refererURL);
-                Network.FileDownload.STATUS result = fileDownload.get();
-                if (result != Network.FileDownload.STATUS.SUCCESS) {
-                    return false;
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return true;
-        }
-    }
+//    private static class SubtitleDownloader extends AsyncTaskLoader<Boolean> {
+//        Episode episode;
+//        Subtitle subtitle;
+//
+//        public SubtitleDownloader(@NonNull Context context, Episode episode, Subtitle subtitle) {
+//            super(context);
+//            this.episode = episode;
+//            this.subtitle = subtitle;
+//        }
+//
+//        @Nullable
+//        @Override
+//        public Boolean loadInBackground() {
+//
+//
+//            return true;
+//        }
+//    }
 }
