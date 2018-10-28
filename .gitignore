@@ -1,5 +1,16 @@
+# OS-specific files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
+# Generated files
+bin/
+gen/
+out/
 
 # Compiled class file
 *.class
@@ -29,20 +40,33 @@ hs_err_pid*
 *.apk
 *.ap_
 
-# IntelliJ
+# IntelliJ IDEA
 *.iml
+*.iws
+/out/
 
-.properties
-/
-.idea/libraries
-/
+# User-specific configurations
+.idea/caches/
+.idea/libraries/
+.idea/shelf/
 .idea/workspace.xml
 .idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
 .idea/dictionaries
-.idea/libraries
-.idea/caches
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources.xml
+.idea/dataSources.ids
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/assetWizardSettings.xml
 
 # Gradle files
 .gradle/
@@ -51,11 +75,41 @@ build/
 # Local configuration file (sdk path, etc)
 local.properties
 
-# Android Studio Navigation editor temp files
+# Files for the ART/Dalvik VM
+*.dex
+
+# Android Studio
+/*/build/
+/*/local.properties
+/*/out
+/*/*/build
+/*/*/production
+captures/
 .navigation/
+*.ipr
+*~
+*.swp
+
+# Signing files
+.signing/
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 
-# Android Studio captures folder
-captures/
+# Legacy Eclipse project files
+.classpath
+.project
+.cproject
+.settings/
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
