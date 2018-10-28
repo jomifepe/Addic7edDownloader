@@ -22,15 +22,12 @@ import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Season;
 import com.jomifepe.addic7eddownloader.model.TVShow;
-import com.jomifepe.addic7eddownloader.model.comparator.SeasonComparator;
-import com.jomifepe.addic7eddownloader.model.persistence.AppDatabase;
 import com.jomifepe.addic7eddownloader.model.viewmodel.SeasonViewModel;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
-import com.jomifepe.addic7eddownloader.ui.adapter.TVShowSeasonsRecyclerAdapter;
+import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
+import com.jomifepe.addic7eddownloader.ui.adapter.SeasonsRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,7 +43,7 @@ public class TVShowSeasonsActivity
     private TVShow show;
     private SeasonViewModel seasonViewModel;
 
-    private TVShowSeasonsRecyclerAdapter listSeasonsAdapter;
+    private SeasonsRecyclerAdapter listSeasonsAdapter;
 
     @BindView(R.id.activity_seasons_listSeasons) RecyclerView listSeasons;
     @BindView(R.id.activity_seasons_progressBar) ProgressBar progressBar;
@@ -64,7 +61,7 @@ public class TVShowSeasonsActivity
         show = intent.getParcelableExtra(TVShowsFragment.EXTRA_TVSHOW);
         setTitle(show.getTitle());
 
-        listSeasonsAdapter = new TVShowSeasonsRecyclerAdapter(listSeasonsItemClickListener);
+        listSeasonsAdapter = new SeasonsRecyclerAdapter(listSeasonsItemClickListener);
         listSeasons.setAdapter(listSeasonsAdapter);
         listSeasons.setLayoutManager(new LinearLayoutManager(this));
 
@@ -84,7 +81,7 @@ public class TVShowSeasonsActivity
         });
     }
 
-    RecyclerViewItemClickListener listSeasonsItemClickListener = new RecyclerViewItemClickListener() {
+    RecyclerViewItemClick listSeasonsItemClickListener = new RecyclerViewItemClick() {
         @Override
         public void onItemClick(View v, int position) {
             Season selectedSeason = listSeasonsAdapter.getList().get(position);

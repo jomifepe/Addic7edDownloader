@@ -41,9 +41,11 @@ public final class Const {
         public static final String SEARCH_RESULTS_TABLE_CLASS = ".tabel";
         public static final String SM_SUB_TABLE_CLASS = ".tabel95 .tabel95";
         public static final String SM_VERSION_ELEM_CLASS = ".NewsTitle";
+        public static final String SM_INFO_ELEM_CLASS = ".newsDate";
         public static final String SM_LANGUAGE_ELEM_CLASS = ".language";
         public static final String SM_IMAGE_TITLE_CORRECTED = "Corrected";
         public static final String SM_IMAGE_TITLE_HEARING_IMPAIRED = "Hearing Impaired";
+        public static final String SM_IMAGE_TITLE_HD = "720/1080";
         public static final String SM_IMAGE_HDICON_FILENAME = "hdicon.png";
         public static final String SM_BUTTON_DOWNLOAD_CLASS = ".buttonDownload";
 

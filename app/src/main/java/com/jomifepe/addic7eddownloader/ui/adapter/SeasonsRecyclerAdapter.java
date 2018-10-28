@@ -15,9 +15,9 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TVShowSeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, TVShowSeasonsRecyclerAdapter.SeasonsRecyclerViewHolder> {
+public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsRecyclerAdapter.SeasonsRecyclerViewHolder> {
 
-    public TVShowSeasonsRecyclerAdapter(RecyclerViewItemClickListener itemClickListener) {
+    public SeasonsRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         super(itemClickListener);
     }
 

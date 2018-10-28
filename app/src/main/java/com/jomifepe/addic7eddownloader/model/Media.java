@@ -1,6 +1,7 @@
 package com.jomifepe.addic7eddownloader.model;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
@@ -18,7 +19,11 @@ public class Media implements Parcelable {
 
     public Integer addic7edId;
     protected String title;
-    @TypeConverters(MediaTypeConverter.class) public MediaType type;
+
+    @Ignore
+    @TypeConverters(MediaTypeConverter.class)
+    public MediaType type;
+
     protected String imageURL;
 
     public Media(Integer id, Integer addic7edId, String title, MediaType type, String imageURL) {
@@ -29,6 +34,7 @@ public class Media implements Parcelable {
         this.imageURL = imageURL;
     }
 
+    @Ignore
     public Media(Integer addic7edId, String title, MediaType type, String imageURL) {
         this.addic7edId = addic7edId;
         this.title = title;
@@ -36,6 +42,7 @@ public class Media implements Parcelable {
         this.imageURL = imageURL;
     }
 
+    @Ignore
     public Media(Integer addic7edId, String title, MediaType type) {
         this(addic7edId, title, type, null);
     }

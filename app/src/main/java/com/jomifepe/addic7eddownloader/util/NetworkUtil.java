@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,7 +30,11 @@ public class NetworkUtil {
         private NetworkTaskCallback callback;
 
         public OkHTTPGETRequest() {
-            this.client = new OkHttpClient();
+            this.client = new OkHttpClient.Builder()
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .writeTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .build();
         }
 
         public OkHTTPGETRequest(NetworkTaskCallback callback) {
@@ -46,13 +51,13 @@ public class NetworkUtil {
 
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
-                    return null;
+                    return new Pair<>(false, "");
                 }
 
                 return new Pair<>(true, response.body().string());
             } catch (IOException e) {
                 Log.d(getClass().getSimpleName(), "called for " + e.getClass());
-                return null;
+                return new Pair<>(false, "");
             }
         }
 

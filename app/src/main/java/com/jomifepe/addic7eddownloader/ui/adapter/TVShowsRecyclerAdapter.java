@@ -22,7 +22,7 @@ public class TVShowsRecyclerAdapter
         extends BaseRecyclerAdapter<TVShow, TVShowsRecyclerAdapter.TVShowsRecyclerViewHolder>
         implements Filterable {
 
-    public TVShowsRecyclerAdapter(RecyclerViewItemClickListener itemClickListener) {
+    public TVShowsRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         super(itemClickListener);
     }
 

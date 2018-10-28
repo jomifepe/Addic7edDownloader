@@ -26,8 +26,8 @@ import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
 import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.viewmodel.SubtitleViewModel;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
-import com.jomifepe.addic7eddownloader.ui.adapter.TVShowSubtitlesRecyclerAdapter;
+import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
+import com.jomifepe.addic7eddownloader.ui.adapter.SubtitlesRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.Const;
 import com.jomifepe.addic7eddownloader.util.NetworkUtil;
 import com.jomifepe.addic7eddownloader.util.Util;
@@ -48,7 +48,7 @@ public class TVShowSubtitlesActivity
     private Subtitle selectedSubtitle;
 
     private SubtitleViewModel subtitleViewModel;
-    private TVShowSubtitlesRecyclerAdapter listSubtitlesAdapter;
+    private SubtitlesRecyclerAdapter listSubtitlesAdapter;
 
     @BindView(R.id.activity_episode_substitles_listSubtitles) RecyclerView listSubtitles;
     @BindView(R.id.activity_episode_subtitles_progressBar) ProgressBar progressBar;
@@ -73,7 +73,7 @@ public class TVShowSubtitlesActivity
         supportActionBar.setTitle(show.getTitle());
         supportActionBar.setSubtitle(String.format(Locale.getDefault(), "Season %d - Episode %d", episode.getSeason(), episode.getNumber()));
 
-        listSubtitlesAdapter = new TVShowSubtitlesRecyclerAdapter(listSubtitlesItemClickListener);
+        listSubtitlesAdapter = new SubtitlesRecyclerAdapter(listSubtitlesItemClickListener);
         listSubtitles.setAdapter(listSubtitlesAdapter);
         listSubtitles.setLayoutManager(new LinearLayoutManager(this));
 
@@ -92,7 +92,7 @@ public class TVShowSubtitlesActivity
         });
     }
 
-    RecyclerViewItemClickListener listSubtitlesItemClickListener = new RecyclerViewItemClickListener() {
+    RecyclerViewItemClick listSubtitlesItemClickListener = new RecyclerViewItemClick() {
         @Override
         public void onItemClick(View v, int position) {
             selectedSubtitle = listSubtitlesAdapter.getItem(position);
@@ -106,10 +106,10 @@ public class TVShowSubtitlesActivity
             throw new IllegalStateException("No subtitle selected");
         }
 
-        String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        if (!EasyPermissions.hasPermissions(this, perms)) {
+        String perm = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+        if (!EasyPermissions.hasPermissions(this, perm)) {
             EasyPermissions.requestPermissions(this, getString(R.string.write_external_storage_rationale),
-                    Const.RC_WRITE_EXTERNAL_STORAGE, perms);
+                    Const.RC_WRITE_EXTERNAL_STORAGE, perm);
             return;
         }
 

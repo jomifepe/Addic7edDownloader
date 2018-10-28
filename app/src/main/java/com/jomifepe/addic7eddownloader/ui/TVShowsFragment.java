@@ -22,14 +22,12 @@ import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.viewmodel.TVShowViewModel;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
+import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.TVShowsRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.Util;
-import com.nanotasks.BackgroundWork;
-import com.nanotasks.Completion;
-import com.nanotasks.Tasks;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -94,7 +92,7 @@ public class TVShowsFragment extends Fragment {
         });
     }
 
-    RecyclerViewItemClickListener tvShowsListItemClickListener = new RecyclerViewItemClickListener() {
+    RecyclerViewItemClick tvShowsListItemClickListener = new RecyclerViewItemClick() {
         @Override
         public void onItemClick(View v, int position) {
             TVShow show = listTVShowsRecyclerAdapter.getList().get(position);
@@ -117,15 +115,17 @@ public class TVShowsFragment extends Fragment {
             ArrayList<TVShow> listSubtraction = new ArrayList<>(fetchedShows);
             listSubtraction.removeAll(listTVShowsRecyclerAdapter.getList());
             if (listSubtraction.size() > 0) {
-
                 Util.RunnableAsyncTask dbTask = new Util.RunnableAsyncTask(() ->
-                        tvShowViewModel.insert(listSubtraction),
+                        tvShowViewModel.insert(fetchedShows),
                         ex -> {
                             Log.d(this.getClass().getSimpleName(), ex.getMessage(), ex);
                             Toast.makeText(getContext(), R.string.message_addic7edLoader_error, Toast.LENGTH_LONG).show();
                         }
                 );
                 dbTask.execute();
+                Toast.makeText(getContext(), String.format(Locale.getDefault(), "%d fetched shows from Addic7ed", fetchedShows.size()), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Shows are up to date", Toast.LENGTH_SHORT).show();
             }
             progressBarListTVShows.setVisibility(View.GONE);
         }
@@ -135,6 +135,7 @@ public class TVShowsFragment extends Fragment {
     };
 
     private static class Addic7edTVShowsFetcher extends AsyncTaskLoader<ArrayList<TVShow>> {
+
         Addic7edTVShowsFetcher(Context context) {
             super(context);
             onContentChanged();

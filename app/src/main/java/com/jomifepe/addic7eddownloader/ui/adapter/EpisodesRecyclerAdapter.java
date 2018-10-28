@@ -9,16 +9,15 @@ import android.widget.TextView;
 
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Episode;
-import com.jomifepe.addic7eddownloader.model.Season;
 
 import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TVShowEpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, TVShowEpisodesRecyclerAdapter.EpisodesRecyclerViewHolder> {
+public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, EpisodesRecyclerAdapter.EpisodesRecyclerViewHolder> {
 
-    public TVShowEpisodesRecyclerAdapter(RecyclerViewItemClickListener itemClickListener) {
+    public EpisodesRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         super(itemClickListener);
     }
 

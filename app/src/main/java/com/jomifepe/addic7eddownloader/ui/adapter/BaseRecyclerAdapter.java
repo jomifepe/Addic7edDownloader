@@ -7,9 +7,9 @@ import java.util.Arrays;
 
 public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V>{
     protected ArrayList<E> listData;
-    protected RecyclerViewItemClickListener itemClickListener;
+    protected RecyclerViewItemClick itemClickListener;
 
-    public BaseRecyclerAdapter(RecyclerViewItemClickListener itemClickListener) {
+    public BaseRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         this.listData = new ArrayList<>();
         this.itemClickListener = itemClickListener;
     }

@@ -14,8 +14,8 @@ public class TVShow extends Media implements Parcelable {
 //    @NonNull private Integer numberOfSeasons;
 //    @NonNull private Integer numberOfEpisodes;
 
-    public TVShow(Integer id, String title, String imageURL) {
-        super(id, title, MediaType.TV_SHOW, imageURL);
+    public TVShow(Integer addic7edId, String title, String imageURL) {
+        super(addic7edId, title, MediaType.TV_SHOW, imageURL);
     }
 
     @Ignore

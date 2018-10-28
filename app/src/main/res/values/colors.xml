@@ -8,4 +8,7 @@
     <color name="colorMaterialIndigoA200">#536DFE</color>
     <color name="colorMaterialRedA200">#ff5252</color>
     <color name="colorMaterialGray900">#212121</color>
+    <color name="colorMaterialGreen500">#4caf50</color>
+    <color name="colorMaterialGreen600">#43A047</color>
+    <color name="colorMaterialIndigo500">#3F51B5</color>
 </resources>

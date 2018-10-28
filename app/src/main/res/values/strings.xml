@@ -19,4 +19,7 @@
     <string name="subtitle_download_notification_title">Subtitle Download</string>
     <string name="subtitle_download_notification_message">Downloader file: %s</string>
     <string name="message_addic7edLoader_error">An unexpected error occurred while fetching data from Addic7ed</string>
+    <string name="subtitle_hd_label">720p/1080p</string>
+    <string name="subtitle_hi_label">Hearing Impaired</string>
+    <string name="subtitles_corrected_label">Corrected</string>
 </resources>

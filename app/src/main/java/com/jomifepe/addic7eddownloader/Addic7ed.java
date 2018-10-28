@@ -200,47 +200,6 @@ public class Addic7ed {
         return results;
     }
 
-//    private static ArrayList<TVShow> parseTVShowsDocument(String document) {
-//        ArrayList<TVShow> results = new ArrayList<>();
-//
-//        Document page = Jsoup.parse(document);
-//        Elements table = page.select(Const.Addic7ed.TVSHOWS_TABLE_CLASS);
-//
-//        Elements cellsShow = table.select(String.format("td%s", Const.Addic7ed.TVSHOWS_INFO_CELL_CLASS));
-//        Elements cellsShowSE = table.select(String.format("td%s", Const.Addic7ed.TVSHOWS_SE_CELL_CLASS));
-//
-//        try {
-//            for (int i = 0; i < cellsShow.size(); i++) {
-//                Element cell = cellsShow.get(i);
-//                Elements a = cell.select("a");
-//
-//                String title = a.text();
-//                Integer id = null,
-//                        numberOfSeasons = null,
-//                        numberOfEpisodes = null;
-//                try {
-//                    String digitRegex = "\\D+";
-//
-//                    id = Integer.parseInt(a.attr("href").replaceAll(digitRegex, ""));
-//                    String[] se = cellsShowSE.get(i).text().split(",");
-//                    numberOfSeasons = Integer.parseInt(se[0].replaceAll(digitRegex, ""));
-//                    numberOfEpisodes = Integer.parseInt(se[1].replaceAll(digitRegex, ""));
-//                } catch (NumberFormatException e) {
-//                    e.printStackTrace();
-//                }
-//                String imageURL = cell.select("img").attr("src");
-//
-//                TVShow tvShow = new TVShow(title, id, numberOfSeasons, numberOfEpisodes);
-//                results.add(tvShow);
-//            }
-//
-//        } catch (NumberFormatException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return results;
-//    }
-
     private static ArrayList<TVShow> parseTVShowsSelectOptionElement(String document) {
         ArrayList<TVShow> results = new ArrayList<>();
 
@@ -332,39 +291,45 @@ public class Addic7ed {
         LinkedList<Subtitle> results = new LinkedList<>();
 
         Document smPage = Jsoup.parse(document);
-        Elements titleSpan = smPage.select(Const.Addic7ed.SM_MEDIA_TITLE);
+//        Elements titleSpan = smPage.select(Const.Addic7ed.SM_MEDIA_TITLE);
+//        String title = titleSpan.text().split("<span>")[0].replaceAll("[\\-,:; ]+", ".");
         Elements subs = smPage.select(Const.Addic7ed.SM_SUB_TABLE_CLASS);
+
         for (Element sub : subs) {
-            Elements cellNewsTitle = sub.select(Const.Addic7ed.SM_VERSION_ELEM_CLASS);
-            Elements correctedElem = sub.select(String.format("[title=\"%s\"]", Const.Addic7ed.SM_IMAGE_TITLE_CORRECTED));
-            Elements hearingImpElem = sub.select(String.format("[title=\"%s\"]", Const.Addic7ed.SM_IMAGE_TITLE_HEARING_IMPAIRED));
-            Elements downloadButton = sub.select(Const.Addic7ed.SM_BUTTON_DOWNLOAD_CLASS);
-            Elements cellNewsTitleImages = cellNewsTitle.select("img");
+            Element cellNewsTitle = sub.select(Const.Addic7ed.SM_VERSION_ELEM_CLASS).get(0);
+            Elements hdIconsList = cellNewsTitle.select(String.format("[title=\"%s\"]", Const.Addic7ed.SM_IMAGE_TITLE_HD));
 
-            String title = titleSpan.text().split("<span>")[0].replaceAll("[\\-,:; ]+", ".");
-            Boolean corrected = correctedElem.size() != 0;
-            Boolean hearingImpaired = hearingImpElem.size() != 0;
-            Boolean hd = false;
-            for (Element cellNewsTitleImage : cellNewsTitleImages) {
-                if (cellNewsTitleImage.attr("src").contains(Const.Addic7ed.SM_IMAGE_HDICON_FILENAME)) {
-                    hd = true;
-                    break;
-                }
-            }
-            String language = sub.select(Const.Addic7ed.SM_LANGUAGE_ELEM_CLASS).text();
             String version = cellNewsTitle.text().split(",")[0].split(" ")[1];
+            Boolean isHD = hdIconsList.size() != 0;
 
-            String downloadURL = String.format("%s%s", Const.Addic7ed.BASE_URL, downloadButton.get(0).attr("href"));
-            if (downloadButton.size() > 1) {
-                for (Element button : downloadButton) {
-                    if (button.attr("href").contains("updated")) {
-                        downloadURL = String.format("%s%s", Const.Addic7ed.BASE_URL, button.attr("href"));
-                        break;
+            Elements languageCells = sub.select(Const.Addic7ed.SM_LANGUAGE_ELEM_CLASS);
+            for (Element languageCell : languageCells) {
+                /* row where the language, completed tag and download buttons are */
+                Element subtitleRow = languageCell.parent();
+                /* cell where the hd, hi and corrected icons are */
+                Element subtitleRowSibling = subtitleRow.nextElementSibling();
+                Element subtitleInfoCell = subtitleRowSibling.select(Const.Addic7ed.SM_INFO_ELEM_CLASS).get(0);
+
+                /* auxiliary elements */
+                Elements correctedIconsList = subtitleInfoCell.select(String.format("[title=\"%s\"]", Const.Addic7ed.SM_IMAGE_TITLE_CORRECTED));
+                Elements hearingImpairedIconsList = subtitleInfoCell.select(String.format("[title=\"%s\"]", Const.Addic7ed.SM_IMAGE_TITLE_HEARING_IMPAIRED));
+                Elements downloadButton = subtitleRow.select(Const.Addic7ed.SM_BUTTON_DOWNLOAD_CLASS);
+
+                String language = languageCell.text();
+                Boolean isCorrected = correctedIconsList.size() != 0;
+                Boolean isHearingImpaired = hearingImpairedIconsList.size() != 0;
+                String downloadURL = String.format("%s%s", Const.Addic7ed.BASE_URL, downloadButton.get(0).attr("href"));
+                if (downloadButton.size() > 1) {
+                    for (Element button : downloadButton) {
+                        if (button.attr("href").contains("updated")) {
+                            downloadURL = String.format("%s%s", Const.Addic7ed.BASE_URL, button.attr("href"));
+                            break;
+                        }
                     }
                 }
-            }
 
-            results.add(new Subtitle(episode.getId(), language, version, corrected, hearingImpaired, hd, downloadURL));
+                results.add(new Subtitle(episode.getId(), language, version, isCorrected, isHearingImpaired, isHD, downloadURL));
+            }
         }
 
         return results;

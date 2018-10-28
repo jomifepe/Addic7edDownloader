@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 
 import com.jomifepe.addic7eddownloader.R;
+import com.jomifepe.addic7eddownloader.util.ErrorUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        new ErrorUtil.DefaultExceptionHandler(this);
+        new ErrorUtil.DefaultExceptionHandler(this);
 
         ButterKnife.bind(this);
 

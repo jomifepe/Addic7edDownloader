@@ -1,6 +1,5 @@
 package com.jomifepe.addic7eddownloader.ui;
 
-import android.app.ActionBar;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -25,8 +24,8 @@ import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Season;
 import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.viewmodel.EpisodeViewModel;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClickListener;
-import com.jomifepe.addic7eddownloader.ui.adapter.TVShowEpisodesRecyclerAdapter;
+import com.jomifepe.addic7eddownloader.ui.adapter.EpisodesRecyclerAdapter;
+import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
 import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ public class TVShowEpisodesActivity
     private Season season;
 
     private EpisodeViewModel episodeViewModel;
-    private TVShowEpisodesRecyclerAdapter listEpisodesAdapter;
+    private EpisodesRecyclerAdapter listEpisodesAdapter;
 
     @BindView(R.id.activity_episodes_listEpisodes) RecyclerView listEpisodes;
     @BindView(R.id.activity_episodes_progressBar) ProgressBar progressBar;
@@ -70,7 +69,7 @@ public class TVShowEpisodesActivity
         supportActionBar.setTitle(show.getTitle());
         supportActionBar.setSubtitle(String.format(Locale.getDefault(), "Season %d", season.getNumber()));
 
-        listEpisodesAdapter = new TVShowEpisodesRecyclerAdapter(listEpisodesItemClickListener);
+        listEpisodesAdapter = new EpisodesRecyclerAdapter(listEpisodesItemClickListener);
         listEpisodes.setAdapter(listEpisodesAdapter);
         listEpisodes.setLayoutManager(new LinearLayoutManager(this));
 
@@ -89,7 +88,7 @@ public class TVShowEpisodesActivity
         });
     }
 
-    RecyclerViewItemClickListener listEpisodesItemClickListener = new RecyclerViewItemClickListener() {
+    RecyclerViewItemClick listEpisodesItemClickListener = new RecyclerViewItemClick() {
         @Override
         public void onItemClick(View v, int position) {
             Episode episode = listEpisodesAdapter.getItem(position);
