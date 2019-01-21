@@ -4,9 +4,11 @@ import android.os.Handler;
 import android.util.Pair;
 
 import com.jomifepe.addic7eddownloader.model.Episode;
+import com.jomifepe.addic7eddownloader.model.Record;
 import com.jomifepe.addic7eddownloader.model.Season;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
 import com.jomifepe.addic7eddownloader.model.TVShow;
+import com.jomifepe.addic7eddownloader.util.AsyncUtil;
 import com.jomifepe.addic7eddownloader.util.Const;
 import com.jomifepe.addic7eddownloader.util.NetworkUtil;
 
@@ -20,126 +22,132 @@ import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 public class Addic7ed {
-
-    private Handler messageHandler;
-
-    private final static Logger LOGGER = Logger.getLogger(Addic7ed.class.getName());
+    public interface RecordResultListener<T extends Record> {
+        void onComplete(List<T> records);
+        void onFailure(Exception e);
+    }
 
     public static LinkedList<Subtitle> searchSubtitle(String parameters) throws UnsupportedEncodingException {
         LinkedList<Subtitle> subs = new LinkedList<>();
-
         String searchURL = String.format(Const.Addic7ed.SEARCH_URL, URLEncoder.encode(parameters, "UTF-8"));
         try {
-            NetworkUtil.OkHTTPGETRequest resultsRequest = new NetworkUtil.OkHTTPGETRequest();
-            resultsRequest.execute(searchURL);
-            Pair<Boolean, String> result = resultsRequest.get();
+            NetworkUtil.OkHTTPGETRequest resultsRequest =
+                    new NetworkUtil.OkHTTPGETRequest(searchURL)
+                    .addOnCompleteListener(result -> {
+                        LinkedList<URL> resultsURLs = null;
+                        try {
+                            resultsURLs = parseSearchResults(result);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
 
-            LinkedList<URL> resultsURLs = parseSearchResults(result.second);
-
-            if (!result.second.isEmpty()) {
-                for (URL resultURL : resultsURLs) {
-                    NetworkUtil.OkHTTPGETRequest subtitlesRequest = new NetworkUtil.OkHTTPGETRequest();
-                    subtitlesRequest.execute(resultURL.toString());
-                    Pair<Boolean, String> response = subtitlesRequest.get();
-
-//                    LinkedList<Subtitle> parsedSubtitles = parseEpisodeSubtitlesDocument(response,
-//                            resultURL.toString().contains("serie/") ? MediaType.TV_SHOW : MediaType.MOVIE);
-//                    LinkedList<Subtitle> parsedSubtitles = parseEpisodeSubtitlesDocument(response);
-//                    subs.addAll(parsedSubtitles);
-                }
-            }
-        } catch (MalformedURLException e) {
+                        if (!result.isEmpty()) {
+                            for (URL resultURL : resultsURLs) {
+                                NetworkUtil.OkHTTPGETRequest subtitlesRequest =
+                                        new NetworkUtil.OkHTTPGETRequest(resultURL.toString())
+                                        .addOnCompleteListener(subtitlesResult -> {
+//                                            LinkedList<Subtitle> parsedSubtitles = parseEpisodeSubtitlesDocument(response,
+//                                            resultURL.toString().contains("serie/") ? MediaType.TV_SHOW : MediaType.MOVIE);
+//                                            LinkedList<Subtitle> parsedSubtitles = parseEpisodeSubtitlesDocument(response);
+//                                            subs.addAll(parsedSubtitles);
+                                        });
+                                subtitlesRequest.execute();
+                            }
+                        }
+                    });
+            resultsRequest.execute();
+        } catch (Exception e) {
             System.err.println(String.format("%s is not a valid URL.", searchURL));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
         }
 
         return subs;
     }
 
-    public static ArrayList<TVShow> getTVShows() {
-        ArrayList<TVShow> resultList = new ArrayList<>();
-
+    public static void getTVShows(RecordResultListener<TVShow> resultListener) {
         try {
-            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest();
-            request.execute(Const.Addic7ed.BASE_URL);
-            Pair<Boolean, String> response = request.get();
-            if (!response.first /* request was unsuccessful */) {
-                return resultList;
-            }
+            NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
+                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                    ArrayList<TVShow> parsedResult = parseTVShowsSelectOptionElement(result);
+                    resultListener.onComplete(parsedResult);
+                });
+                parsingTask.execute();
+            };
 
-            ArrayList<TVShow> parsedResult = parseTVShowsSelectOptionElement(response.second);
-            resultList.addAll(parsedResult);
+            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(Const.Addic7ed.BASE_URL);
+            request.addOnFailureListener(resultListener::onFailure);
+            request.addOnCompleteListener(onComplete);
+            request.execute();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return resultList;
     }
 
-    public static ArrayList<Season> getTVShowSeasons(TVShow show) {
-        ArrayList<Season> resultList = new ArrayList<>();
-
+    public static void getTVShowSeasons(TVShow show, RecordResultListener<Season> resultListener) {
         try {
-            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest();
-            request.execute(String.format(Locale.getDefault(), Const.Addic7ed.TVSHOW_PAGE_URL, show.getAddic7edId()));
-            Pair<Boolean, String> response = request.get();
-            if (!response.first /* request was unsuccessful*/ ) {
-                return resultList;
-            }
+            NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
+                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                    ArrayList<Season> parsedResults = parseSeasonsFromShowDocument(show, result);
+                    resultListener.onComplete(parsedResults);
+                });
+                parsingTask.execute();
+            };
 
-            ArrayList<Season> parsedResults = parseSeasonsFromShowDocument(show, response.second);
-            resultList.addAll(parsedResults);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            String url = String.format(Locale.getDefault(),
+                    Const.Addic7ed.TVSHOW_PAGE_URL, show.getAddic7edId());
+            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(url);
+            request.addOnFailureListener(resultListener::onFailure);
+            request.addOnCompleteListener(onComplete);
+            request.execute();
+        } catch (Exception e) {
+            resultListener.onFailure(e);
         }
-
-        return resultList;
     }
 
-    public static ArrayList<Episode> getSeasonEpisodes(TVShow show, Season season) {
-        ArrayList<Episode> resultList = new ArrayList<>();
-
+    public static void getSeasonEpisodes(TVShow show, Season season,
+                                         RecordResultListener<Episode> resultListener) {
         try {
-            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest();
-            request.execute(String.format(Locale.getDefault(), Const.Addic7ed.TVSHOW_SEASON_EPISODES_URL, show.getAddic7edId(), season.getNumber()));
-            Pair<Boolean, String> response = request.get();
-            if (!response.first /* request was unsuccessful */ ) {
-                return resultList;
-            }
+            NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
+                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                    ArrayList<Episode> parsedResults = parseSeasonDocument(result, season);
+                    resultListener.onComplete(parsedResults);
+                });
+                parsingTask.execute();
+            };
 
-            ArrayList<Episode> parsedResults = parseSeasonDocument(response.second, season);
-            resultList.addAll(parsedResults);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            String url = String.format(Locale.getDefault(), Const.Addic7ed.TVSHOW_SEASON_EPISODES_URL,
+                    show.getAddic7edId(), season.getNumber());
+            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(url);
+            request.addOnFailureListener(resultListener::onFailure);
+            request.addOnCompleteListener(onComplete);
+            request.execute();
+        } catch (Exception e) {
+            resultListener.onFailure(e);
         }
-
-        return resultList;
     }
 
-    public static ArrayList<Subtitle> getEpisodeSubtitles(Episode episode) {
-        ArrayList<Subtitle> resultList = new ArrayList<>();
-
+    public static void getEpisodeSubtitles(Episode episode, RecordResultListener<Subtitle> resultListener) {
         try {
-            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest();
-            request.execute(episode.getPageURL());
-            Pair<Boolean, String> response = request.get();
-            if (!response.first /* request was unsuccessful */ ) {
-                return resultList;
-            }
+            NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
+                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                    LinkedList<Subtitle> parsedResults = parseEpisodeSubtitlesDocument(result, episode);
+                    resultListener.onComplete(parsedResults);
+                });
+                parsingTask.execute();
+            };
 
-            LinkedList<Subtitle> parsedResults = parseEpisodeSubtitlesDocument(response.second, episode);
-            resultList.addAll(parsedResults);
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(episode.getPageURL());
+            request.addOnFailureListener(resultListener::onFailure);
+            request.addOnCompleteListener(onComplete);
+            request.execute();
+        } catch (Exception e) {
+            resultListener.onFailure(e);
         }
-
-        return resultList;
     }
 
     private static Integer getNumberOfEpisodesFromSeasonDocument(String document) {
@@ -150,28 +158,40 @@ public class Addic7ed {
         return episodeSeparator.size() + 1;
     }
 
-    private static ArrayList<Season> parseSeasonsFromShowDocument(TVShow show, String document) throws ExecutionException, InterruptedException {
-        ArrayList<Season> resultList = new ArrayList<>();
+//    private static void parseSeasonsFromShowDocumentWithNumberOfEpisode(TVShow show,
+//         String document, RecordResultListener resultListener)
+//            throws ExecutionException, InterruptedException {
+//
+//        List<Season> resultList = new ArrayList<>();
+//        Document parsePage = Jsoup.parse(document);
+//        Elements seasonButtons = parsePage.select(String.format(Locale.getDefault(),
+//                "%s button", Const.Addic7ed.TVSHOW_PAGE_SEASON_BUTTONS_DIV));
+//
+//        for (Element button : seasonButtons) {
+//            String season = button.text();
+//            int seasonNumber = Integer.parseInt(season);
+//
+//            String url = String.format(Locale.getDefault(),
+//                    Const.Addic7ed.TVSHOW_SEASON_EPISODES_URL, show.getAddic7edId(), seasonNumber);
+//            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(url);
+//            request.addOnFailureListener(resultListener::onFailure);
+//            request.addOnCompleteListener(result -> {
+//                Integer numberOfEpisodes = getNumberOfEpisodesFromSeasonDocument(result);
+//                resultList.add(new Season(show.getAddic7edId(), seasonNumber, numberOfEpisodes));
+//            });
+//            request.execute();
+//        }
+//    }
 
+    private static ArrayList<Season> parseSeasonsFromShowDocument(TVShow show, String document) {
+        ArrayList<Season> resultList = new ArrayList<>();
         Document parsePage = Jsoup.parse(document);
         Elements seasonButtons = parsePage.select(String.format(Locale.getDefault(),
                 "%s button", Const.Addic7ed.TVSHOW_PAGE_SEASON_BUTTONS_DIV));
 
         for (Element button : seasonButtons) {
-            String season = button.text();
-            int seasonNumber = Integer.parseInt(season);
-
-            NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest();
-            request.execute(String.format(Locale.getDefault(), Const.Addic7ed.TVSHOW_SEASON_EPISODES_URL,
-                    show.getAddic7edId(), seasonNumber));
-            Pair<Boolean, String> response = request.get();
-            if (!response.first /* request was unsuccessful */ ) {
-                return resultList;
-            }
-
-            Integer numberOfEpisodes = getNumberOfEpisodesFromSeasonDocument(response.second);
-
-            resultList.add(new Season(show.getAddic7edId(), seasonNumber, numberOfEpisodes));
+            int seasonNumber = Integer.parseInt(button.text());
+            resultList.add(new Season(show.getAddic7edId(), seasonNumber, null));
         }
 
         return resultList;

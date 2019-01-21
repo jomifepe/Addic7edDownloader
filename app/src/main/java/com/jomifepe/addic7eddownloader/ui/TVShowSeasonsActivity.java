@@ -25,37 +25,32 @@ import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.viewmodel.SeasonViewModel;
 import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.SeasonsRecyclerAdapter;
-import com.jomifepe.addic7eddownloader.util.Util;
+import com.jomifepe.addic7eddownloader.util.AsyncUtil;
+import com.jomifepe.addic7eddownloader.util.NotificationUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TVShowSeasonsActivity
-        extends AppCompatActivity {
+public class TVShowSeasonsActivity extends BaseActivity {
+    public static final String EXTRA_TVSHOW = "com.jomifepe.addic7eddownloader.ui.TVSHOW";
+    public static final String EXTRA_TVSHOW_SEASON = "com.jomifepe.addic7eddownloader.ui.TVSHOW_SEASON";
 
-    public static final String PACKAGE_NAME = "com.jomifepe.addic7eddownloader.ui";
-    public static final String EXTRA_TVSHOW = String.format("%s.TVSHOW", PACKAGE_NAME);
-    public static final String EXTRA_TVSHOW_SEASON = String.format("%s.TVSHOW_SEASON", PACKAGE_NAME);
-    private final int ADDIC7ED_LOADER_ID = Util.RANDOM.nextInt();
+    @BindView(R.id.activity_seasons_progressBar) ProgressBar progressBar;
+    @BindView(R.id.activity_seasons_listSeasons) RecyclerView listSeasons;
 
     private TVShow show;
     private SeasonViewModel seasonViewModel;
 
     private SeasonsRecyclerAdapter listSeasonsAdapter;
 
-    @BindView(R.id.activity_seasons_listSeasons) RecyclerView listSeasons;
-    @BindView(R.id.activity_seasons_progressBar) ProgressBar progressBar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_seasons);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        ButterKnife.bind(this);
 
         Intent intent = getIntent();
         show = intent.getParcelableExtra(TVShowsFragment.EXTRA_TVSHOW);
@@ -68,15 +63,48 @@ public class TVShowSeasonsActivity
         seasonViewModel = ViewModelProviders.of(this,
                 new SeasonViewModel.SeasonViewModelFactory(getApplication(), show)).get(SeasonViewModel.class);
 
-
         observeSeasonsViewModel();
-        getSupportLoaderManager().initLoader(ADDIC7ED_LOADER_ID, null, addic7edLoaderListener).forceLoad();
+        loadSeasons();
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_seasons;
     }
 
     private void observeSeasonsViewModel() {
         seasonViewModel.getSeasonsList().observe(this, seasons -> {
             if (seasons != null) {
                 listSeasonsAdapter.setList(new ArrayList<>(seasons));
+            }
+        });
+    }
+
+    private void loadSeasons() {
+        Addic7ed.getTVShowSeasons(show, new Addic7ed.RecordResultListener<Season>() {
+            @Override
+            public void onComplete(List<Season> seasons) {
+                try {
+                    ArrayList<Season> listSubtraction = new ArrayList<>(seasons);
+                    listSubtraction.removeAll(listSeasonsAdapter.getList());
+                    if (listSubtraction.size() > 0) {
+                        AsyncUtil.RunnableAsyncTask dbTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                            seasonViewModel.insert(listSubtraction);
+                        });
+                        dbTask.addOnFailureListener(e -> handleException(e, R.string.error_message_persist_seasons));
+                        dbTask.addOnCompleteListener(() -> progressBar.setVisibility(View.GONE));
+                        dbTask.execute();
+                    } else {
+                        runOnUiThread(() -> progressBar.setVisibility(View.GONE));
+                    }
+                } catch (Exception e) {
+                    onFailure(e);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                handleException(e, R.string.error_message_failed_load_seasons);
             }
         });
     }
@@ -101,50 +129,5 @@ public class TVShowSeasonsActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private LoaderManager.LoaderCallbacks<ArrayList<Season>> addic7edLoaderListener = new LoaderManager.LoaderCallbacks<ArrayList<Season>>() {
-
-        @NonNull
-        @Override
-        public Loader<ArrayList<Season>> onCreateLoader(int id, @Nullable Bundle args) {
-            return new Addic7edSeasonsFetcher(TVShowSeasonsActivity.this, show);
-        }
-
-        @Override
-        public void onLoadFinished(@NonNull Loader<ArrayList<Season>> loader, ArrayList<Season> fetchedSeasons) {
-            ArrayList<Season> listSubtraction = new ArrayList<>(fetchedSeasons);
-            listSubtraction.removeAll(listSeasonsAdapter.getList());
-            if (listSubtraction.size() > 0) {
-                Util.RunnableAsyncTask dbTask = new Util.RunnableAsyncTask(() ->
-                        seasonViewModel.insert(listSubtraction),
-                        ex -> {
-                            Log.d(this.getClass().getSimpleName(), ex.getMessage(), ex);
-                            Toast.makeText(getApplicationContext(), R.string.message_addic7edLoader_error, Toast.LENGTH_LONG).show();
-                        }
-                );
-                dbTask.execute();
-            }
-
-            progressBar.setVisibility(View.GONE);
-        }
-
-        @Override
-        public void onLoaderReset(@NonNull Loader<ArrayList<Season>> loader) {}
-    };
-
-    private static class Addic7edSeasonsFetcher extends AsyncTaskLoader<ArrayList<Season>> {
-        private TVShow show;
-
-        Addic7edSeasonsFetcher(Context context, TVShow show) {
-            super(context);
-            this.show = show;
-            onContentChanged();
-        }
-
-        @Override
-        public ArrayList<Season> loadInBackground() {
-            return Addic7ed.getTVShowSeasons(show);
-        }
     }
 }

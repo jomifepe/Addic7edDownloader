@@ -13,9 +13,7 @@ import com.jomifepe.addic7eddownloader.model.persistence.typeconverter.MediaType
 import java.util.Objects;
 
 @Entity(indices = {@Index(value = "addic7edId", unique = true)})
-public class Media implements Parcelable {
-    /* Database specific attributes */
-    @PrimaryKey(autoGenerate = true) public Integer id;
+public class Media extends Record implements Parcelable {
 
     public Integer addic7edId;
     protected String title;
@@ -27,7 +25,7 @@ public class Media implements Parcelable {
     protected String imageURL;
 
     public Media(Integer id, Integer addic7edId, String title, MediaType type, String imageURL) {
-        this.id = id;
+        super(id);
         this.addic7edId = addic7edId;
         this.title = title;
         this.type = type;
@@ -45,10 +43,6 @@ public class Media implements Parcelable {
     @Ignore
     public Media(Integer addic7edId, String title, MediaType type) {
         this(addic7edId, title, type, null);
-    }
-
-    public Integer getId() {
-        return id;
     }
 
     public Integer getAddic7edId() {

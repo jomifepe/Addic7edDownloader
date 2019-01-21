@@ -13,6 +13,7 @@ import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.TVShow;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -22,8 +23,17 @@ public class TVShowsRecyclerAdapter
         extends BaseRecyclerAdapter<TVShow, TVShowsRecyclerAdapter.TVShowsRecyclerViewHolder>
         implements Filterable {
 
+    List<TVShow> unfilteredList;
+
     public TVShowsRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         super(itemClickListener);
+    }
+
+    @Override
+    public void setList(ArrayList<TVShow> tvShows) {
+        this.listData = tvShows;
+        this.unfilteredList = tvShows;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -51,7 +61,7 @@ public class TVShowsRecyclerAdapter
 
                 String searchQuery = charSequence.toString();
                 ArrayList<TVShow> filteredList = new ArrayList<>();
-                for (TVShow item : listData) {
+                for (TVShow item : unfilteredList) {
                     if (item.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
                         filteredList.add(item);
                     }

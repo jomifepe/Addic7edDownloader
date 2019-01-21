@@ -4,11 +4,8 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -18,9 +15,8 @@ import java.util.Objects;
                                     childColumns = "episodeId") },
         indices = { @Index(value = "episodeId") })
 
-public class Subtitle implements Parcelable {
+public class Subtitle extends Record implements Parcelable {
     /* Database specific attributes */
-    @PrimaryKey(autoGenerate = true) private Integer id;
     private Integer episodeId;
 
     private String language;
@@ -32,7 +28,7 @@ public class Subtitle implements Parcelable {
 
     public Subtitle(Integer id, Integer episodeId, String language, String version,
                     boolean corrected, boolean hearingImpaired, boolean hd, String downloadURL) {
-        this.id = id;
+        super(id);
         this.episodeId = episodeId;
         this.language = language;
         this.version = version;
@@ -58,10 +54,6 @@ public class Subtitle implements Parcelable {
     public Subtitle(Integer episodeId, String language, String version,
                     boolean corrected, boolean hearingImpaired, boolean hd) {
         this(episodeId, language, version, corrected, hearingImpaired, hd, null);
-    }
-
-    public Integer getId() {
-        return id;
     }
 
     public Integer getEpisodeId() {

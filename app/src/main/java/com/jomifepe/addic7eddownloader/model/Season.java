@@ -4,11 +4,8 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -18,16 +15,15 @@ import java.util.Objects;
                                     childColumns = "showId") },
         indices = { @Index(value = "showId") })
 
-public class Season implements Parcelable {
+public class Season extends Record implements Parcelable {
     /* Database specific attributes */
-    @PrimaryKey(autoGenerate = true) private Integer id;
     private Integer showId;
 
     private Integer number;
     private Integer numberOfEpisodes;
 
     public Season(Integer id, Integer showId, Integer number, Integer numberOfEpisodes) {
-        this.id = id;
+        super(id);
         this.showId = showId;
         this.number = number;
         this.numberOfEpisodes = numberOfEpisodes;
@@ -43,10 +39,6 @@ public class Season implements Parcelable {
     @Override
     public String toString() {
         return String.format(Locale.getDefault(), "Season %d", number);
-    }
-
-    public Integer getId() {
-        return id;
     }
 
     public Integer getShowId() {

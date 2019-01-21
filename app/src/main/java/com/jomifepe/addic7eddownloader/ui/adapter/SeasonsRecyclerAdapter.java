@@ -35,7 +35,13 @@ public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsR
     public void onBindViewHolder(@NonNull SeasonsRecyclerViewHolder holder, int position) {
         Season season = listData.get(position);
         holder.txtDescription.setText(String.format(Locale.getDefault(), "Season %d", season.getNumber()));
-        holder.txtNumOfEpisodes.setText(String.format(Locale.getDefault(), "%d episodes", season.getNumberOfEpisodes()));
+        Integer numberOfEpisodes = season.getNumberOfEpisodes();
+        if (numberOfEpisodes != null) {
+            holder.txtNumOfEpisodes.setVisibility(View.VISIBLE);
+            holder.txtNumOfEpisodes.setText(String.format(Locale.getDefault(), "%d episodes", numberOfEpisodes));
+        } else {
+            holder.txtNumOfEpisodes.setVisibility(View.GONE);
+        }
     }
 
     static class SeasonsRecyclerViewHolder extends RecyclerView.ViewHolder {

@@ -16,10 +16,22 @@
     <string name="write_external_storage_rationale">External storage permission is needed in order to download subtitles from Addic7ed</string>
     <string name="notification_channel_name">addic7eddownloader_notification_channel</string>
     <string name="message_network_error">Failed to perform request, check your internet connection</string>
-    <string name="subtitle_download_notification_title">Subtitle Download</string>
-    <string name="subtitle_download_notification_message">Downloader file: %s</string>
+    <string name="subtitle_download_notification_title">Subtitle file saved</string>
+    <string name="subtitle_download_notification_message">Downloaded file: %s</string>
     <string name="message_addic7edLoader_error">An unexpected error occurred while fetching data from Addic7ed</string>
     <string name="subtitle_hd_label">720p/1080p</string>
     <string name="subtitle_hi_label">Hearing Impaired</string>
     <string name="subtitles_corrected_label">Corrected</string>
+
+    <string name="debug_logger_tag">[ADD7DOWNLOADER_DEBUG]:</string>
+    <string name="error_message_persist_episodes">Failed to locally save episodes</string>
+    <string name="error_message_failed_load_episodes">Failed to load season episodes</string>
+    <string name="error_message_persist_seasons">Failed to locally save tv show seasons</string>
+    <string name="error_message_failed_load_seasons">Failed to load tv show seasons</string>
+    <string name="error_message_download_subtitle">Failed to download subtitle file</string>
+    <string name="error_message_failed_load_subtitles">Failed to load episode subtitles</string>
+    <string name="error_message_persist_subtitles">Failed to locally save subtitles</string>
+    <string name="error_message_persist_tv_shows">Failed to locally save tv shows</string>
+    <string name="error_message_failed_load_tv_shows">Failed to load tv shows</string>
+    <string name="error_message_load_tv_shows">An unexpected error occurred while loading tv shows</string>
 </resources>

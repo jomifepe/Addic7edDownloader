@@ -2,8 +2,8 @@ package com.jomifepe.addic7eddownloader.util;
 
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.util.Log;
-import android.util.Pair;
+
+import org.jsoup.HttpStatusException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,16 +20,22 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class NetworkUtil {
-    public interface NetworkTaskCallback {
-        void onTaskCompleted(String result);
-        void onTaskFailed(String result);
+    public interface NetworkTaskCompleteListener {
+        void onComplete(String result);
     }
 
-    public static class OkHTTPGETRequest extends AsyncTask<String, Void, Pair<Boolean, String>> {
-        private final OkHttpClient client;
-        private NetworkTaskCallback callback;
+    public interface NetworkTaskFailureListener {
+        void onFailure(Exception e);
+    }
 
-        public OkHTTPGETRequest() {
+    public static class OkHTTPGETRequest extends AsyncTask<Void, Void, String> {
+        private final OkHttpClient client;
+        private NetworkTaskCompleteListener completeListener;
+        private NetworkTaskFailureListener failureListener;
+        private final String targetURL;
+
+        public OkHTTPGETRequest(String targetURL) {
+            this.targetURL = targetURL;
             this.client = new OkHttpClient.Builder()
                     .connectTimeout(5, TimeUnit.SECONDS)
                     .writeTimeout(10, TimeUnit.SECONDS)
@@ -37,70 +43,85 @@ public class NetworkUtil {
                     .build();
         }
 
-        public OkHTTPGETRequest(NetworkTaskCallback callback) {
-            this();
-            this.callback = callback;
+        public OkHTTPGETRequest addOnCompleteListener(NetworkTaskCompleteListener listener) {
+            this.completeListener = listener;
+            return this;
+        }
+
+        public OkHTTPGETRequest addOnFailureListener(NetworkTaskFailureListener listener) {
+            this.failureListener = listener;
+            return this;
         }
 
         @Override
-        protected Pair<Boolean, String> doInBackground(String... targetURL) {
+        protected String doInBackground(Void... voids) {
             Request request = new Request.Builder()
-                    .url(targetURL[0])
+                    .url(targetURL)
                     .header("User-Agent", Const.USER_AGENT)
                     .build();
 
             try (Response response = client.newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    return new Pair<>(false, "");
+                if (response.isSuccessful()) {
+                    return response.body().string();
                 }
-
-                return new Pair<>(true, response.body().string());
-            } catch (IOException e) {
-                Log.d(getClass().getSimpleName(), "called for " + e.getClass());
-                return new Pair<>(false, "");
+            } catch (Exception e) {
+                LogUtil.logD(getClass().getSimpleName(),
+                        "ADD7DOWNLOADER_DEBUG", "Called for " + e.getClass());
+                if (failureListener != null) {
+                    failureListener.onFailure(e);
+                }
             }
+
+            return null;
         }
 
         @Override
-        protected void onPostExecute(Pair<Boolean, String> result) {
-            if (callback != null) {
-                if (result.first /* task successfull */) {
-                    callback.onTaskCompleted(result.second);
-                } else {
-                    callback.onTaskFailed(result.second);
-                }
+        protected void onPostExecute(String result) {
+            if (completeListener != null && result != null) {
+                completeListener.onComplete(result);
             } else {
                 super.onPostExecute(result);
             }
         }
     }
 
-    public static class FileDownload extends AsyncTask<String, Void, Boolean> {
-        private NetworkTaskCallback callback;
-        private String result;
+    public static class FileDownload extends AsyncTask<Void, Void, Void> {
+        private NetworkTaskCompleteListener completeListener;
+        private NetworkTaskFailureListener failureListener;
+        private final String targetURL;
+        private final String refererURL;
 
-        public FileDownload() {}
+        public FileDownload(String targetURL, String refererURL) {
+            this.targetURL = targetURL;
+            this.refererURL = refererURL;
+        }
 
-        public FileDownload(NetworkTaskCallback callback) {
-            this.callback = callback;
+        public FileDownload addOnCompleteListener(NetworkTaskCompleteListener listener) {
+            this.completeListener = listener;
+            return this;
+        }
+
+        public FileDownload addOnFailureListener(NetworkTaskFailureListener listener) {
+            this.failureListener = listener;
+            return this;
         }
 
         @Override
-        protected Boolean doInBackground(String... strings) {
-            String filename;
+        protected Void doInBackground(Void... voids) {
             try {
-                URL url = new URL(strings[0]);
+                URL url = new URL(targetURL);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");
                 con.setRequestProperty("User-Agent", Const.USER_AGENT);
-                con.setRequestProperty("Referer", strings[1]);
+                con.setRequestProperty("Referer", refererURL);
 
                 int responseCode = con.getResponseCode();
-                if (responseCode != HttpURLConnection.HTTP_OK)
-                    return false;
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new HttpStatusException("Request failed", HttpURLConnection.HTTP_OK, url.toString());
+                }
 
                 String contentDisposition = con.getHeaderField("Content-Disposition");
-                result = filename = contentDisposition == null ?
+                String filename = contentDisposition == null ?
                         "" : contentDisposition.replaceFirst("(?i)^.*filename=\"?([^\"]+)\"?.*$", "$1");
 
                 ReadableByteChannel rbc = Channels.newChannel(con.getInputStream());
@@ -111,25 +132,19 @@ public class NetworkUtil {
 
                 fos.close();
                 rbc.close();
-            } catch (IOException e) {
-                Log.d(getClass().getSimpleName(), "called for " + e.getClass());
-                return false;
-            }
 
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (callback != null) {
-                if (success) {
-                    callback.onTaskCompleted(result);
-                } else {
-                    callback.onTaskFailed(result);
+                if (completeListener != null) {
+                    completeListener.onComplete(filename);
                 }
-            } else {
-                super.onPostExecute(success);
+            } catch (Exception e) {
+                LogUtil.logD(getClass().getSimpleName(),
+                        "ADD7DOWNLOADER_DEBUG", "Called for " + e.getClass());
+                if (failureListener != null) {
+                    failureListener.onFailure(e);
+                }
             }
+
+            return null;
         }
     }
 
