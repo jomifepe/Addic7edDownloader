@@ -11,18 +11,18 @@
     <!-- TODO: Update blank fragment layout -->
 
     <ProgressBar
-        android:id="@+id/progressBarListTVShows"
+        android:id="@+id/pbTVShows"
         style="?android:attr/progressBarStyle"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="@+id/listTVShows"
-        app:layout_constraintTop_toTopOf="@+id/listTVShows" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextFilter"
+        android:id="@+id/etTVShowsFilter"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
@@ -39,13 +39,13 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/listTVShows"
+        android:id="@+id/tvTVShows"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextFilter" />
+        app:layout_constraintTop_toBottomOf="@+id/etTVShowsFilter" />
 
 </android.support.constraint.ConstraintLayout>

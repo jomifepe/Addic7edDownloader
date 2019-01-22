@@ -4,11 +4,13 @@ import android.os.AsyncTask;
 
 import com.jomifepe.addic7eddownloader.util.listener.OnCompleteListener;
 import com.jomifepe.addic7eddownloader.util.listener.OnFailureListener;
+import com.jomifepe.addic7eddownloader.util.listener.OnTaskEndedListener;
 
 public class AsyncUtil {
     public static class RunnableAsyncTask extends AsyncTask<Void, Void, Boolean> {
         private OnFailureListener failureListener;
         private OnCompleteListener completionListener;
+        private OnTaskEndedListener taskEndedListener;
         private Runnable runnable;
 
         public RunnableAsyncTask(Runnable runnable) {
@@ -22,6 +24,11 @@ public class AsyncUtil {
 
         public RunnableAsyncTask addOnFailureListener(OnFailureListener listener) {
             this.failureListener = listener;
+            return this;
+        }
+
+        public RunnableAsyncTask addOnTaskEndedListener(OnTaskEndedListener listener) {
+            this.taskEndedListener = listener;
             return this;
         }
 
@@ -42,6 +49,9 @@ public class AsyncUtil {
         protected void onPostExecute(Boolean success) {
             if (success && completionListener != null) {
                 completionListener.onComplete();
+            }
+            if (taskEndedListener != null) {
+                taskEndedListener.onTaskEnded();
             }
         }
     }

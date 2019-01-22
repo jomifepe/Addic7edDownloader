@@ -7,9 +7,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
@@ -17,10 +19,11 @@ import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.viewmodel.TVShowViewModel;
+import com.jomifepe.addic7eddownloader.ui.adapter.EndlessRecyclerViewScrollListener;
 import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.TVShowsRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.util.AsyncUtil;
-import com.jomifepe.addic7eddownloader.util.NotificationUtil;
+import com.jomifepe.addic7eddownloader.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,30 +34,31 @@ import butterknife.ButterKnife;
 public class TVShowsFragment extends BaseFragment {
     public static final String EXTRA_TVSHOW = "com.jomifepe.addic7eddownloader.ui.TVSHOW";
 
-    @BindView(R.id.listTVShows) RecyclerView listTVShows;
-    @BindView(R.id.editTextFilter) EditText etxtFilter;
-    @BindView(R.id.progressBarListTVShows) ProgressBar progressBarListTVShows;
+    @BindView(R.id.tvTVShows) RecyclerView rvTVShows;
+    @BindView(R.id.etTVShowsFilter) EditText etFilter;
+    @BindView(R.id.pbTVShows) ProgressBar progressBarTVShows;
 
     private TVShowViewModel tvShowViewModel;
-    private TVShowsRecyclerAdapter listTVShowsRecyclerAdapter;
+    private TVShowsRecyclerAdapter listAdapter;
+    private LinearLayoutManager listLayoutManager;
+    private boolean isScrolling;
 
     public TVShowsFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_tvshows, container, false);
         ButterKnife.bind(this, view);
 
-        listTVShowsRecyclerAdapter = new TVShowsRecyclerAdapter(tvShowsListItemClickListener);
-        listTVShows.setAdapter(listTVShowsRecyclerAdapter);
-        listTVShows.setLayoutManager(new LinearLayoutManager(getViewContext()));
+        rvTVShows.setAdapter(listAdapter = new TVShowsRecyclerAdapter(tvShowsListItemClickListener));
+        rvTVShows.setLayoutManager(listLayoutManager = new LinearLayoutManager(getViewContext()));
+        rvTVShows.addOnScrollListener(tvShowsScrollListener);
 
-        etxtFilter.addTextChangedListener(new TextWatcher() {
+        etFilter.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                listTVShowsRecyclerAdapter.getFilter().filter(charSequence);
+                listAdapter.getFilter().filter(charSequence);
             }
 
             @Override public void afterTextChanged(Editable editable) {}
@@ -71,10 +75,37 @@ public class TVShowsFragment extends BaseFragment {
     private void observeTVShowsViewModel() {
         tvShowViewModel.getTvShowsList().observe(this, tvShows -> {
             if (tvShows != null) {
-                listTVShowsRecyclerAdapter.setList(new ArrayList<>(tvShows));
+                listAdapter.setList(new ArrayList<>(tvShows));
             }
         });
     }
+
+    RecyclerView.OnScrollListener tvShowsScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                isScrolling = true;
+            }
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            int currentItems = listLayoutManager.getChildCount();
+            int totalItems = listLayoutManager.getItemCount();
+            int scrollOutItems = listLayoutManager.findFirstVisibleItemPosition();
+
+            LogUtil.logD(getViewContext(), "currentItems: " + currentItems +
+                    ", scrollOutItems: " + scrollOutItems + ", totalItems: " + totalItems);
+            if (isScrolling && (currentItems + scrollOutItems >= totalItems - 5)) {
+                isScrolling = false;
+                progressBarTVShows.setVisibility(View.VISIBLE);
+                listAdapter.loadNewItems();
+                progressBarTVShows.setVisibility(View.GONE);
+            }
+        }
+    };
 
     private void loadTVShows() {
         Addic7ed.getTVShows(new Addic7ed.RecordResultListener<TVShow>() {
@@ -82,7 +113,7 @@ public class TVShowsFragment extends BaseFragment {
             public void onComplete(List<TVShow> tvShows) {
                 try {
                     ArrayList<TVShow> listSubtraction = new ArrayList<>(tvShows);
-                    listSubtraction.removeAll(listTVShowsRecyclerAdapter.getList());
+                    listSubtraction.removeAll(listAdapter.getList());
                     if (listSubtraction.size() > 0) {
                         AsyncUtil.RunnableAsyncTask dbTask = new AsyncUtil.RunnableAsyncTask(() -> {
                             tvShowViewModel.insert(tvShows);
@@ -90,20 +121,23 @@ public class TVShowsFragment extends BaseFragment {
                         dbTask.addOnFailureListener(e -> handleException(e, R.string.error_message_persist_tv_shows));
                         dbTask.addOnCompleteListener(() -> {
                             showMessage(listSubtraction.size() + " new TV Shows were added to the list");
-                            progressBarListTVShows.setVisibility(View.GONE);
+                            progressBarTVShows.setVisibility(View.GONE);
                         });
+                        dbTask.addOnTaskEndedListener(() -> progressBarTVShows.setVisibility(View.GONE));
                         dbTask.execute();
                     } else {
-                        runOnUiThread(() -> progressBarListTVShows.setVisibility(View.GONE));
+                        runOnUiThread(() -> progressBarTVShows.setVisibility(View.GONE));
                     }
                 } catch (Exception e) {
                     handleException(e, R.string.error_message_load_tv_shows);
+                    runOnUiThread(() -> progressBarTVShows.setVisibility(View.GONE));
                 }
             }
 
             @Override
             public void onFailure(Exception e) {
                 handleException(e, R.string.error_message_failed_load_tv_shows);
+                runOnUiThread(() -> progressBarTVShows.setVisibility(View.GONE));
             }
         });
     }
@@ -111,7 +145,7 @@ public class TVShowsFragment extends BaseFragment {
     RecyclerViewItemClick tvShowsListItemClickListener = new RecyclerViewItemClick() {
         @Override
         public void onItemClick(View v, int position) {
-            TVShow show = listTVShowsRecyclerAdapter.getList().get(position);
+            TVShow show = listAdapter.getList().get(position);
 
             Intent tvShowActivityIntent = new Intent(getActivity(), TVShowSeasonsActivity.class);
             tvShowActivityIntent.putExtra(EXTRA_TVSHOW, show);

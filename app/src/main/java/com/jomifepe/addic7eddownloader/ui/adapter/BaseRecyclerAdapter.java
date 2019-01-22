@@ -4,9 +4,10 @@ import android.support.v7.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V>{
-    protected ArrayList<E> listData;
+    protected List<E> listData;
     protected RecyclerViewItemClick itemClickListener;
 
     public BaseRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
@@ -19,9 +20,10 @@ public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> 
         return listData.size();
     }
 
-    public void addItems(ArrayList<E> es) {
+    public void addItems(List<E> es) {
+        final int previousCount = listData.size();
         this.listData.addAll(es);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(previousCount, listData.size());
     }
 
     public void addItem(E... es) {
@@ -29,12 +31,12 @@ public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> 
         notifyDataSetChanged();
     }
 
-    public void setList(ArrayList<E> es) {
+    public void setList(List<E> es) {
         this.listData = es;
         notifyDataSetChanged();
     }
 
-    public ArrayList<E> getList() {
+    public List<E> getList() {
         return listData;
     }
 

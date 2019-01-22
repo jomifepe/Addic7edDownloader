@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
@@ -23,17 +24,38 @@ public class TVShowsRecyclerAdapter
         extends BaseRecyclerAdapter<TVShow, TVShowsRecyclerAdapter.TVShowsRecyclerViewHolder>
         implements Filterable {
 
-    List<TVShow> unfilteredList;
+    public static final int RESULTS_PER_PAGE = 30;
+    private List<TVShow> originalList;
+    private List<TVShow> filteredList;
 
     public TVShowsRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
         super(itemClickListener);
     }
 
+    public List<TVShow> getOriginalList() {
+        return originalList;
+    }
+
+    public TVShowsRecyclerAdapter setOriginalList(List<TVShow> originalList) {
+        this.originalList = originalList;
+        return this;
+    }
+
     @Override
-    public void setList(ArrayList<TVShow> tvShows) {
-        this.listData = tvShows;
-        this.unfilteredList = tvShows;
+    public void setList(List<TVShow> tvShows) {
+        int endRange = Math.min(RESULTS_PER_PAGE, tvShows.size());
+        this.listData = new ArrayList<>(tvShows.subList(0, endRange));
+        this.originalList = new ArrayList<>(tvShows);
+        this.filteredList = new ArrayList<>(tvShows);
         notifyDataSetChanged();
+    }
+
+    public void loadNewItems() {
+        int startRange = listData.size();
+        int endRange = Math.min(startRange + RESULTS_PER_PAGE, filteredList.size());
+        List<TVShow> newItems = filteredList.subList(startRange, endRange);
+        listData.addAll(newItems);
+        notifyItemRangeInserted(startRange, endRange);
     }
 
     @NonNull
@@ -59,9 +81,9 @@ public class TVShowsRecyclerAdapter
             @Override
             protected FilterResults performFiltering(CharSequence charSequence) {
 
-                String searchQuery = charSequence.toString();
-                ArrayList<TVShow> filteredList = new ArrayList<>();
-                for (TVShow item : unfilteredList) {
+                String searchQuery = charSequence.toString().trim();
+                List<TVShow> filteredList = new ArrayList<>();
+                for (TVShow item : originalList) {
                     if (item.getTitle().toLowerCase().contains(searchQuery.toLowerCase())) {
                         filteredList.add(item);
                     }
@@ -75,7 +97,9 @@ public class TVShowsRecyclerAdapter
 
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-                listData = (ArrayList<TVShow>) filterResults.values;
+                filteredList = (List<TVShow>) filterResults.values;
+                listData = new ArrayList<>(filteredList
+                        .subList(0, Math.min(RESULTS_PER_PAGE, filteredList.size())));
                 notifyDataSetChanged();
             }
         };
