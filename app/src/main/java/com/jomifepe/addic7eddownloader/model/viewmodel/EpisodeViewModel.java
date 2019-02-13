@@ -1,7 +1,6 @@
 package com.jomifepe.addic7eddownloader.model.viewmodel;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
@@ -9,7 +8,6 @@ import android.support.annotation.NonNull;
 
 import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Season;
-import com.jomifepe.addic7eddownloader.model.TVShow;
 import com.jomifepe.addic7eddownloader.model.persistence.AppDatabase;
 import com.jomifepe.addic7eddownloader.model.persistence.EpisodeDao;
 

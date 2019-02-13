@@ -32,14 +32,14 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/subtitle_hd_label" />
+            android:text="@string/label_subtitle_hd" />
 
         <ImageView
             android:id="@+id/legend_imgHI"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:tint="@color/colorMaterialIndigo500"
+            android:tint="@color/colorMaterialIndigoA200"
             app:srcCompat="@drawable/ic_hearing_black_24dp" />
 
         <TextView
@@ -48,14 +48,14 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/subtitle_hi_label" />
+            android:text="@string/label_subtitle_hi" />
 
         <ImageView
             android:id="@+id/legend_imgCorrected"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:tint="@color/colorMaterialGreen600"
+            android:tint="@color/colorMaterialGreenA700"
             app:srcCompat="@drawable/ic_check_circle_black_24dp" />
 
         <TextView
@@ -64,7 +64,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/subtitles_corrected_label" />
+            android:text="@string/label_subtitle_corrected" />
 
     </LinearLayout>
 

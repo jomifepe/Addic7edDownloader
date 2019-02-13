@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Episode;
+import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 
 import java.util.Locale;
 
@@ -17,7 +18,7 @@ import butterknife.ButterKnife;
 
 public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, EpisodesRecyclerAdapter.EpisodesRecyclerViewHolder> {
 
-    public EpisodesRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
+    public EpisodesRecyclerAdapter(RecyclerViewItemShortClick itemClickListener) {
         super(itemClickListener);
     }
 
@@ -26,7 +27,7 @@ public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, Episod
     public EpisodesRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_episodes, parent, false);
         EpisodesRecyclerViewHolder viewHolder = new EpisodesRecyclerViewHolder(view);
-        view.setOnClickListener(v -> itemClickListener.onItemClick(v, viewHolder.getLayoutPosition()));
+        view.setOnClickListener(v -> itemClickListener.onItemShortClick(v, viewHolder.getLayoutPosition()));
 
         return viewHolder;
     }

@@ -14,11 +14,11 @@ import java.util.List;
 
 @Dao
 public interface SubtitleDao extends BaseDao<Subtitle> {
-    @Query("SELECT * FROM Subtitle WHERE episodeId = :episodeId")
+    @Query("SELECT * FROM Subtitles WHERE episodeId = :episodeId")
     LiveData<List<Subtitle>> getSubtitles(Integer episodeId);
 
-    @Query("SELECT COUNT(*) FROM Subtitle WHERE episodeId = :episodeId")
+    @Query("SELECT COUNT(*) FROM Subtitles WHERE episodeId = :episodeId")
     int getSubtitleCount(Integer episodeId);
 
-    @Query("DELETE FROM Subtitle") void deleteAll();
+    @Query("DELETE FROM Subtitles") void deleteAll();
 }

@@ -1,17 +1,17 @@
 package com.jomifepe.addic7eddownloader;
 
-import android.os.Handler;
-import android.util.Pair;
-
 import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Record;
 import com.jomifepe.addic7eddownloader.model.Season;
+import com.jomifepe.addic7eddownloader.model.Show;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
-import com.jomifepe.addic7eddownloader.model.TVShow;
-import com.jomifepe.addic7eddownloader.util.AsyncUtil;
 import com.jomifepe.addic7eddownloader.util.Const;
 import com.jomifepe.addic7eddownloader.util.NetworkUtil;
+import com.jomifepe.addic7eddownloader.util.Util;
+import com.jomifepe.addic7eddownloader.util.listener.OnCompleteListener;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
 
 public class Addic7ed {
+    private static final String TAG = "com.jomifepe.addic7eddownloader.Addic7ed";
+
     public interface RecordResultListener<T extends Record> {
         void onComplete(List<T> records);
         void onFailure(Exception e);
@@ -69,11 +69,11 @@ public class Addic7ed {
         return subs;
     }
 
-    public static void getTVShows(RecordResultListener<TVShow> resultListener) {
+    public static void getTVShows(RecordResultListener<Show> resultListener) {
         try {
             NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
-                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
-                    ArrayList<TVShow> parsedResult = parseTVShowsSelectOptionElement(result);
+                Util.Async.RunnableTask parsingTask = new Util.Async.RunnableTask(() -> {
+                    ArrayList<Show> parsedResult = parseTVShowsSelectOptionElement(result);
                     resultListener.onComplete(parsedResult);
                 });
                 parsingTask.execute();
@@ -88,10 +88,10 @@ public class Addic7ed {
         }
     }
 
-    public static void getTVShowSeasons(TVShow show, RecordResultListener<Season> resultListener) {
+    public static void getTVShowSeasons(Show show, RecordResultListener<Season> resultListener) {
         try {
             NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
-                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                Util.Async.RunnableTask parsingTask = new Util.Async.RunnableTask(() -> {
                     ArrayList<Season> parsedResults = parseSeasonsFromShowDocument(show, result);
                     resultListener.onComplete(parsedResults);
                 });
@@ -109,11 +109,11 @@ public class Addic7ed {
         }
     }
 
-    public static void getSeasonEpisodes(TVShow show, Season season,
+    public static void getSeasonEpisodes(Show show, Season season,
                                          RecordResultListener<Episode> resultListener) {
         try {
             NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
-                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                Util.Async.RunnableTask parsingTask = new Util.Async.RunnableTask(() -> {
                     ArrayList<Episode> parsedResults = parseSeasonDocument(result, season);
                     resultListener.onComplete(parsedResults);
                 });
@@ -134,7 +134,7 @@ public class Addic7ed {
     public static void getEpisodeSubtitles(Episode episode, RecordResultListener<Subtitle> resultListener) {
         try {
             NetworkUtil.NetworkTaskCompleteListener onComplete = result -> {
-                AsyncUtil.RunnableAsyncTask parsingTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                Util.Async.RunnableTask parsingTask = new Util.Async.RunnableTask(() -> {
                     LinkedList<Subtitle> parsedResults = parseEpisodeSubtitlesDocument(result, episode);
                     resultListener.onComplete(parsedResults);
                 });
@@ -158,7 +158,7 @@ public class Addic7ed {
         return episodeSeparator.size() + 1;
     }
 
-//    private static void parseSeasonsFromShowDocumentWithNumberOfEpisode(TVShow show,
+//    private static void parseSeasonsFromShowDocumentWithNumberOfEpisode(Show show,
 //         String document, RecordResultListener resultListener)
 //            throws ExecutionException, InterruptedException {
 //
@@ -183,7 +183,7 @@ public class Addic7ed {
 //        }
 //    }
 
-    private static ArrayList<Season> parseSeasonsFromShowDocument(TVShow show, String document) {
+    private static ArrayList<Season> parseSeasonsFromShowDocument(Show show, String document) {
         ArrayList<Season> resultList = new ArrayList<>();
         Document parsePage = Jsoup.parse(document);
         Elements seasonButtons = parsePage.select(String.format(Locale.getDefault(),
@@ -220,25 +220,68 @@ public class Addic7ed {
         return results;
     }
 
-    private static ArrayList<TVShow> parseTVShowsSelectOptionElement(String document) {
-        ArrayList<TVShow> results = new ArrayList<>();
+    private static ArrayList<Show> parseTVShowsSelectOptionElement(String document) {
+        ArrayList<Show> results = new ArrayList<>();
 
         Document parsedDocument = Jsoup.parse(document);
         Elements select = parsedDocument.select("#qsShow option");
 
         for (Element option : select) {
-            String val = option.val();
-            int id = Integer.parseInt(val);
-            if (id == 0) continue;
+            int id = Integer.parseInt(option.val());
+            /* ignore the default option */
+            if (id == 0) {
+                continue;
+            }
+
             String title = option.text();
-            results.add(new TVShow(id, title));
+            results.add(new Show(id, title));
         }
 
         return results;
     }
 
-    private static ArrayList<TVShow> parseTVShowsDocument(String document) {
-        ArrayList<TVShow> results = new ArrayList<>();
+    public static void addShowImages(List<Show> shows, RecordResultListener<Show> listener) {
+        ArrayList<Show> newList = new ArrayList<>(shows);
+        /* enters recursion */
+        addShowImage(newList, 0, () -> listener.onComplete(newList));
+    }
+
+    private static void addShowImage(List<Show> shows, int index,
+                                     final OnCompleteListener completeListener) {
+        String url = String.format(Const.TMDB.SHOW_SEARCH_URL, shows.get(index), Const.TMDB.API_KEY_V3, "en-US");
+        NetworkUtil.OkHTTPGETRequest request = new NetworkUtil.OkHTTPGETRequest(url);
+        request.addOnCompleteListener(result -> {
+            try {
+                if (index < shows.size()) {
+                    JSONObject jsonResponse = new JSONObject(result);
+                    JSONArray jsonResults = (JSONArray) jsonResponse.get("results");
+                    JSONObject firstResult = (JSONObject) jsonResults.get(0);
+                    String poster_path = (String) firstResult.get("poster_path");
+                    if (poster_path != null) {
+                        String posterURL = String.format(Const.TMDB.IMAGE_PATH_W185, poster_path);
+                        Util.Log.logD(TAG, "Added image to " + shows.get(index).getTitle());
+                        shows.get(index).setPosterURL(posterURL);
+                    } else {
+                        Util.Log.logD(TAG,"poster_path is null for " + shows.get(index).getTitle());
+                    }
+
+                    /* continues recursion */
+                    addShowImage(shows, index + 1, completeListener);
+                } else {
+                    completeListener.onComplete();
+                }
+            } catch (Exception e) {
+                Util.Log.logD(TAG, e.getMessage());
+            }
+        });
+        request.addOnFailureListener(e -> {
+            Util.Log.logD(TAG, e.getMessage());
+        });
+        request.execute();
+    }
+
+    private static ArrayList<Show> parseTVShowsDocument(String document) {
+        ArrayList<Show> results = new ArrayList<>();
 
         Document page = Jsoup.parse(document);
         Elements tableCells = page.select(Const.Addic7ed.TVSHOWS_TABLE_CLASS + " td");
@@ -268,8 +311,8 @@ public class Addic7ed {
                 }
                 String imageURL = cell.select("img").attr("src");
 
-                TVShow tvShow = new TVShow(id, title);
-                results.add(tvShow);
+                Show show = new Show(id, title);
+                results.add(show);
             }
 
         } catch (NumberFormatException e) {

@@ -5,21 +5,18 @@ import android.arch.persistence.room.Ignore;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import junit.framework.Assert;
-
-import java.util.ArrayList;
-
-@Entity(inheritSuperIndices = true)
-public class TVShow extends Media implements Parcelable {
+@Entity(tableName = "Shows",
+        inheritSuperIndices = true)
+public class Show extends Media implements Parcelable {
 //    @NonNull private Integer numberOfSeasons;
 //    @NonNull private Integer numberOfEpisodes;
 
-    public TVShow(Integer addic7edId, String title, String imageURL) {
-        super(addic7edId, title, MediaType.TV_SHOW, imageURL);
+    public Show(Integer addic7edId, String title, String posterURL) {
+        super(addic7edId, title, MediaType.TV_SHOW, posterURL);
     }
 
     @Ignore
-    public TVShow(Integer id, String title) {
+    public Show(Integer id, String title) {
         this(id, title, null);
     }
 
@@ -29,19 +26,19 @@ public class TVShow extends Media implements Parcelable {
     }
 
     @Ignore
-    protected TVShow(Parcel in) {
+    protected Show(Parcel in) {
         super(in);
     }
 
-    public static final Creator<TVShow> CREATOR = new Creator<TVShow>() {
+    public static final Creator<Show> CREATOR = new Creator<Show>() {
         @Override
-        public TVShow createFromParcel(Parcel in) {
-            return new TVShow(in);
+        public Show createFromParcel(Parcel in) {
+            return new Show(in);
         }
 
         @Override
-        public TVShow[] newArray(int size) {
-            return new TVShow[size];
+        public Show[] newArray(int size) {
+            return new Show[size];
         }
     };
 

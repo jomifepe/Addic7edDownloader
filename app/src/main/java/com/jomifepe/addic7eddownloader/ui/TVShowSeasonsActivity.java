@@ -1,38 +1,28 @@
 package com.jomifepe.addic7eddownloader.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Season;
-import com.jomifepe.addic7eddownloader.model.TVShow;
+import com.jomifepe.addic7eddownloader.model.Show;
 import com.jomifepe.addic7eddownloader.model.viewmodel.SeasonViewModel;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
+import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.SeasonsRecyclerAdapter;
-import com.jomifepe.addic7eddownloader.util.AsyncUtil;
-import com.jomifepe.addic7eddownloader.util.NotificationUtil;
+import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class TVShowSeasonsActivity extends BaseActivity {
     public static final String EXTRA_TVSHOW = "com.jomifepe.addic7eddownloader.ui.TVSHOW";
@@ -41,10 +31,11 @@ public class TVShowSeasonsActivity extends BaseActivity {
     @BindView(R.id.activity_seasons_progressBar) ProgressBar progressBar;
     @BindView(R.id.activity_seasons_listSeasons) RecyclerView listSeasons;
 
-    private TVShow show;
+    private Show show;
     private SeasonViewModel seasonViewModel;
 
     private SeasonsRecyclerAdapter listSeasonsAdapter;
+    private LinearLayoutManager listLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,15 +44,20 @@ public class TVShowSeasonsActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
-        show = intent.getParcelableExtra(TVShowsFragment.EXTRA_TVSHOW);
+        show = intent.getParcelableExtra(getString(R.string.intent_extra_tv_show));
         setTitle(show.getTitle());
 
         listSeasonsAdapter = new SeasonsRecyclerAdapter(listSeasonsItemClickListener);
         listSeasons.setAdapter(listSeasonsAdapter);
-        listSeasons.setLayoutManager(new LinearLayoutManager(this));
+        listSeasons.setLayoutManager(listLayoutManager = new LinearLayoutManager(this));
 
-        seasonViewModel = ViewModelProviders.of(this,
-                new SeasonViewModel.SeasonViewModelFactory(getApplication(), show)).get(SeasonViewModel.class);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                listSeasons.getContext(), listLayoutManager.getOrientation());
+        listSeasons.addItemDecoration(dividerItemDecoration);
+
+        seasonViewModel = ViewModelProviders.of(this, new SeasonViewModel
+                .SeasonViewModelFactory(getApplication(), show))
+                .get(SeasonViewModel.class);
 
         observeSeasonsViewModel();
         loadSeasons();
@@ -88,10 +84,10 @@ public class TVShowSeasonsActivity extends BaseActivity {
                     ArrayList<Season> listSubtraction = new ArrayList<>(seasons);
                     listSubtraction.removeAll(listSeasonsAdapter.getList());
                     if (listSubtraction.size() > 0) {
-                        AsyncUtil.RunnableAsyncTask dbTask = new AsyncUtil.RunnableAsyncTask(() -> {
+                        Util.Async.RunnableTask dbTask = new Util.Async.RunnableTask(() -> {
                             seasonViewModel.insert(listSubtraction);
                         });
-                        dbTask.addOnFailureListener(e -> handleException(e, R.string.error_message_persist_seasons));
+                        dbTask.addOnFailureListener(e -> handleException(e, R.string.error_persist_seasons));
                         dbTask.addOnCompleteListener(() -> progressBar.setVisibility(View.GONE));
                         dbTask.execute();
                     } else {
@@ -104,14 +100,14 @@ public class TVShowSeasonsActivity extends BaseActivity {
 
             @Override
             public void onFailure(Exception e) {
-                handleException(e, R.string.error_message_failed_load_seasons);
+                handleException(e, R.string.error_load_seasons);
             }
         });
     }
 
-    RecyclerViewItemClick listSeasonsItemClickListener = new RecyclerViewItemClick() {
+    RecyclerViewItemShortClick listSeasonsItemClickListener = new RecyclerViewItemShortClick() {
         @Override
-        public void onItemClick(View v, int position) {
+        public void onItemShortClick(View v, int position) {
             Season selectedSeason = listSeasonsAdapter.getList().get(position);
 
             Intent episodeActivityIntent = new Intent(TVShowSeasonsActivity.this, TVShowEpisodesActivity.class);

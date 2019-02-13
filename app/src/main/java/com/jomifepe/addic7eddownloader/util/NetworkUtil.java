@@ -61,12 +61,12 @@ public class NetworkUtil {
                     .build();
 
             try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful()) {
-                    return response.body().string();
+                if (!response.isSuccessful()) {
+                    throw new HttpStatusException(response.body().string(), response.code(), targetURL);
                 }
+                return response.body().string();
             } catch (Exception e) {
-                LogUtil.logD(getClass().getSimpleName(),
-                        "ADD7DOWNLOADER_DEBUG", "Called for " + e.getClass());
+                Util.Log.logD(getClass().getName(), "Called for " + e.getClass());
                 if (failureListener != null) {
                     failureListener.onFailure(e);
                 }
@@ -90,10 +90,12 @@ public class NetworkUtil {
         private NetworkTaskFailureListener failureListener;
         private final String targetURL;
         private final String refererURL;
+        private final String savePath;
 
-        public FileDownload(String targetURL, String refererURL) {
+        public FileDownload(String targetURL, String refererURL, String savePath) {
             this.targetURL = targetURL;
             this.refererURL = refererURL;
+            this.savePath = savePath;
         }
 
         public FileDownload addOnCompleteListener(NetworkTaskCompleteListener listener) {
@@ -126,8 +128,8 @@ public class NetworkUtil {
 
                 ReadableByteChannel rbc = Channels.newChannel(con.getInputStream());
 
-                String path = Environment.getExternalStorageDirectory() + File.separator + "Download/" + filename;
-                FileOutputStream fos = new FileOutputStream(path);
+                String filePath = savePath + File.separator + filename;
+                FileOutputStream fos = new FileOutputStream(filePath);
                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
                 fos.close();
@@ -137,8 +139,7 @@ public class NetworkUtil {
                     completeListener.onComplete(filename);
                 }
             } catch (Exception e) {
-                LogUtil.logD(getClass().getSimpleName(),
-                        "ADD7DOWNLOADER_DEBUG", "Called for " + e.getClass());
+                Util.Log.logD(getClass().getSimpleName(), "Called for " + e.getClass());
                 if (failureListener != null) {
                     failureListener.onFailure(e);
                 }

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
+import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 
 import java.util.Locale;
 
@@ -18,7 +19,7 @@ import butterknife.ButterKnife;
 
 public class SubtitlesRecyclerAdapter extends BaseRecyclerAdapter<Subtitle, SubtitlesRecyclerAdapter.SubtitlesRecyclerViewHolder> {
 
-    public SubtitlesRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
+    public SubtitlesRecyclerAdapter(RecyclerViewItemShortClick itemClickListener) {
         super(itemClickListener);
     }
 
@@ -27,7 +28,7 @@ public class SubtitlesRecyclerAdapter extends BaseRecyclerAdapter<Subtitle, Subt
     public SubtitlesRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_subtitles, parent, false);
         SubtitlesRecyclerViewHolder viewHolder = new SubtitlesRecyclerViewHolder(view);
-        view.setOnClickListener(v -> itemClickListener.onItemClick(v, viewHolder.getLayoutPosition()));
+        view.setOnClickListener(v -> itemClickListener.onItemShortClick(v, viewHolder.getLayoutPosition()));
 
         return viewHolder;
     }

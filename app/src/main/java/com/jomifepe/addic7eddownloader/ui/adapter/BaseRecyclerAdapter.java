@@ -2,15 +2,19 @@ package com.jomifepe.addic7eddownloader.ui.adapter;
 
 import android.support.v7.widget.RecyclerView;
 
+import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V>{
-    protected List<E> listData;
-    protected RecyclerViewItemClick itemClickListener;
+public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder>
+        extends RecyclerView.Adapter<V> {
 
-    public BaseRecyclerAdapter(RecyclerViewItemClick itemClickListener) {
+    protected List<E> listData;
+    protected RecyclerViewItemShortClick itemClickListener;
+
+    public BaseRecyclerAdapter(RecyclerViewItemShortClick itemClickListener) {
         this.listData = new ArrayList<>();
         this.itemClickListener = itemClickListener;
     }
@@ -26,8 +30,8 @@ public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder> 
         notifyItemRangeInserted(previousCount, listData.size());
     }
 
-    public void addItem(E... es) {
-        this.listData.addAll(Arrays.asList(es));
+    public void addItem(E e) {
+        this.listData.add(e);
         notifyDataSetChanged();
     }
 

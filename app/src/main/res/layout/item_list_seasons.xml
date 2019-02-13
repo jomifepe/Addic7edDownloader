@@ -5,27 +5,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
-    android:focusable="true" >
+    android:focusable="true"
+    android:background="?attr/selectableItemBackground">
 
     <TextView
-        android:id="@+id/item_list_seasons_txtDescription"
+        android:id="@+id/tv_item_list_seasons_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:layout_weight="1"
         android:text="description"
         android:textColor="@color/colorMaterialGray900"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/item_list_season_txtNumOfEpisodes"
+        app:layout_constraintEnd_toStartOf="@+id/tv_item_list_season_num_of_episodes"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/item_list_season_txtNumOfEpisodes"
+        android:id="@+id/tv_item_list_season_num_of_episodes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

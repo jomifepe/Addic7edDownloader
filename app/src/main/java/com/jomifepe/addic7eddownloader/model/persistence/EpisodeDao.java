@@ -14,11 +14,11 @@ import java.util.List;
 
 @Dao
 public interface EpisodeDao extends BaseDao<Episode> {
-    @Query("SELECT * FROM Episode WHERE seasonId = :seasonId")
+    @Query("SELECT * FROM Episodes WHERE seasonId = :seasonId")
     LiveData<List<Episode>> getEpisodes(Integer seasonId);
 
-    @Query("SELECT COUNT(*) FROM Episode WHERE seasonId = :seasonId")
+    @Query("SELECT COUNT(*) FROM Episodes WHERE seasonId = :seasonId")
     int getEpisodeCount(Integer seasonId);
 
-    @Query("DELETE FROM Episode") void deleteAll();
+    @Query("DELETE FROM Episodes") void deleteAll();
 }

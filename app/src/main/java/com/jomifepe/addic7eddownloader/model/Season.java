@@ -10,10 +10,15 @@ import android.os.Parcelable;
 import java.util.Locale;
 import java.util.Objects;
 
-@Entity(foreignKeys = { @ForeignKey(entity = TVShow.class,
-                                    parentColumns = "addic7edId",
-                                    childColumns = "showId") },
-        indices = { @Index(value = "showId") })
+@Entity(tableName = "Seasons",
+        foreignKeys = {
+            @ForeignKey(entity = Show.class,
+                        parentColumns = "addic7edId",
+                        childColumns = "showId")
+        },
+        indices = {
+            @Index(value = "showId")
+        })
 
 public class Season extends Record implements Parcelable {
     /* Database specific attributes */

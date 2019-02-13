@@ -52,6 +52,14 @@ public final class Const {
     }
     public static class File {
         public static final String DEFAULT_ERROR_LOG_FILENAME = "addic7edd.error.log";
+    }
 
+    public static class TMDB {
+        public static final String API_KEY_V3 = "27702f41ed36c7fe12af78910041c736";
+        public static final String BASE_URL = "https://api.themoviedb.org";
+        public static final String IMAGE_BASE_PATH = "http://image.tmdb.org";
+        public static final String IMAGE_PATH_W185 = IMAGE_BASE_PATH + "/t/p/w185/%s";
+        public static final String SHOW_URL = BASE_URL + "/3/tv/%s?api_key=%s&language=%s";
+        public static final String SHOW_SEARCH_URL = BASE_URL + "/3/search/tv?query=%s&api_key=%s&language=%s";
     }
 }

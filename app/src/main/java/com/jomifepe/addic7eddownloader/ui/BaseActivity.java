@@ -7,7 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.jomifepe.addic7eddownloader.util.LogUtil;
+import com.jomifepe.addic7eddownloader.util.Util;
 
 import butterknife.ButterKnife;
 
@@ -23,12 +23,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected void handleException(Exception e, @StringRes int message) {
         showMessage(message);
-        LogUtil.logD(this, e.getMessage());
+        Util.Log.logD(this, e.getMessage());
     }
 
     protected void handleException(View view, Exception e, @StringRes int message) {
         showMessage(view, message);
-        LogUtil.logD(this, e.getMessage());
+        Util.Log.logD(this, e.getMessage());
     }
 
     protected void showMessage(String message) {

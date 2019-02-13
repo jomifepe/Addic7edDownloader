@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="colorMaterialGray300">#e0e0e0</color>
+    <color name="colorPrimary">@color/addic7ed</color>
+    <color name="colorPrimaryDark">@color/addic7edDarker</color>
+    <color name="colorAccent">@color/addic7ed</color>
+
+    <color name="addic7ed">#009BCB</color>
+    <color name="addic7edDarker">#0081A8</color>
+
+    <color name="colorMaterialGray300">#E0E0E0</color>
     <color name="colorMaterialGray400">#BDBDBD</color>
     <color name="colorMaterialIndigoA200">#536DFE</color>
     <color name="colorMaterialRedA200">#ff5252</color>
+    <color name="colorMaterialRedA400">#ff1744</color>
+    <color name="colorMaterialRedA700">#d50000</color>
+    <color name="colorMaterialGray600">#757575</color>
+    <color name="colorMaterialGray700">#616161</color>
+    <color name="colorMaterialGray800">#424242</color>
     <color name="colorMaterialGray900">#212121</color>
     <color name="colorMaterialGreen500">#4caf50</color>
     <color name="colorMaterialGreen600">#43A047</color>
+    <color name="colorMaterialGreenA400">#00E676</color>
+    <color name="colorMaterialGreenA700">#00C853</color>
     <color name="colorMaterialIndigo500">#3F51B5</color>
 </resources>

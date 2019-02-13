@@ -3,7 +3,6 @@ package com.jomifepe.addic7eddownloader.model;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
-import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -14,7 +13,6 @@ import java.util.Objects;
 
 @Entity(indices = {@Index(value = "addic7edId", unique = true)})
 public class Media extends Record implements Parcelable {
-
     public Integer addic7edId;
     protected String title;
 
@@ -22,22 +20,22 @@ public class Media extends Record implements Parcelable {
     @TypeConverters(MediaTypeConverter.class)
     public MediaType type;
 
-    protected String imageURL;
+    protected String posterURL;
 
-    public Media(Integer id, Integer addic7edId, String title, MediaType type, String imageURL) {
+    public Media(Integer id, Integer addic7edId, String title, MediaType type, String posterURL) {
         super(id);
         this.addic7edId = addic7edId;
         this.title = title;
         this.type = type;
-        this.imageURL = imageURL;
+        this.posterURL = posterURL;
     }
 
     @Ignore
-    public Media(Integer addic7edId, String title, MediaType type, String imageURL) {
+    public Media(Integer addic7edId, String title, MediaType type, String posterURL) {
         this.addic7edId = addic7edId;
         this.title = title;
         this.type = type;
-        this.imageURL = imageURL;
+        this.posterURL = posterURL;
     }
 
     @Ignore
@@ -57,8 +55,13 @@ public class Media extends Record implements Parcelable {
         return type;
     }
 
-    public String getImageURL() {
-        return imageURL;
+    public String getPosterURL() {
+        return posterURL;
+    }
+
+    public Media setPosterURL(String posterURL) {
+        this.posterURL = posterURL;
+        return this;
     }
 
     protected Media(Parcel in) {
@@ -73,7 +76,7 @@ public class Media extends Record implements Parcelable {
             addic7edId = in.readInt();
         }
         title = in.readString();
-        imageURL = in.readString();
+        posterURL = in.readString();
     }
 
     public static final Creator<Media> CREATOR = new Creator<Media>() {
@@ -108,7 +111,7 @@ public class Media extends Record implements Parcelable {
             parcel.writeInt(addic7edId);
         }
         parcel.writeString(title);
-        parcel.writeString(imageURL);
+        parcel.writeString(posterURL);
     }
 
     @Override
@@ -119,12 +122,12 @@ public class Media extends Record implements Parcelable {
         return Objects.equals(addic7edId, media.addic7edId) &&
                 Objects.equals(title, media.title) &&
                 type == media.type &&
-                Objects.equals(imageURL, media.imageURL);
+                Objects.equals(posterURL, media.posterURL);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(addic7edId, title, type, imageURL);
+        return Objects.hash(addic7edId, title, type, posterURL);
     }
 }

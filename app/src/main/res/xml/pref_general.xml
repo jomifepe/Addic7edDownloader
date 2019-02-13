@@ -1,0 +1,22 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/title_pref_general">
+    <PreferenceCategory android:title="@string/title_pref_category_general">
+        <ListPreference
+            android:icon="@drawable/ic_smartphone_black_24dp"
+            android:entries="@array/navigation_sections"
+            android:entryValues="@array/navigation_sections"
+            android:defaultValue="Shows"
+            android:key="@string/key_pref_general_default_screen"
+            android:title="@string/title_pref_general_default_screen" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_pref_category_subtitles">
+        <Preference
+            android:id="@+id/pref_subtitle_save_location"
+            android:icon="@drawable/ic_sd_storage_black_24dp"
+            android:key="@string/key_pref_subtitle_save_location"
+            android:title="@string/title_pref_subtitle_save_location" />
+    </PreferenceCategory>
+</PreferenceScreen>

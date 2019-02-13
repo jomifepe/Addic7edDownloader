@@ -3,6 +3,7 @@ package com.jomifepe.addic7eddownloader.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
@@ -13,12 +14,11 @@ import com.jomifepe.addic7eddownloader.Addic7ed;
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Season;
-import com.jomifepe.addic7eddownloader.model.TVShow;
+import com.jomifepe.addic7eddownloader.model.Show;
 import com.jomifepe.addic7eddownloader.model.viewmodel.EpisodeViewModel;
 import com.jomifepe.addic7eddownloader.ui.adapter.EpisodesRecyclerAdapter;
-import com.jomifepe.addic7eddownloader.ui.adapter.RecyclerViewItemClick;
-import com.jomifepe.addic7eddownloader.util.AsyncUtil;
-import com.jomifepe.addic7eddownloader.util.NotificationUtil;
+import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
+import com.jomifepe.addic7eddownloader.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +34,12 @@ public class TVShowEpisodesActivity extends BaseActivity {
     @BindView(R.id.activity_episodes_listEpisodes) RecyclerView listEpisodes;
     @BindView(R.id.activity_episodes_progressBar) ProgressBar progressBar;
 
-    private TVShow show;
+    private Show show;
     private Season season;
 
     private EpisodeViewModel episodeViewModel;
     private EpisodesRecyclerAdapter listEpisodesAdapter;
+    private LinearLayoutManager listLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +57,15 @@ public class TVShowEpisodesActivity extends BaseActivity {
 
         listEpisodesAdapter = new EpisodesRecyclerAdapter(listEpisodesItemClickListener);
         listEpisodes.setAdapter(listEpisodesAdapter);
-        listEpisodes.setLayoutManager(new LinearLayoutManager(this));
+        listEpisodes.setLayoutManager(listLayoutManager = new LinearLayoutManager(this));
 
-        episodeViewModel = ViewModelProviders.of(this,
-                new EpisodeViewModel.EpisodeViewModelFactory(getApplication(), season)).get(EpisodeViewModel.class);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                listEpisodes.getContext(), listLayoutManager.getOrientation());
+        listEpisodes.addItemDecoration(dividerItemDecoration);
+
+        episodeViewModel = ViewModelProviders.of(this, new EpisodeViewModel
+                .EpisodeViewModelFactory(getApplication(), season))
+                .get(EpisodeViewModel.class);
 
         observeEpisodesViewModel();
         loadEpisodes();
@@ -86,11 +92,12 @@ public class TVShowEpisodesActivity extends BaseActivity {
                     ArrayList<Episode> listSubtraction = new ArrayList<>(episodes);
                     listSubtraction.removeAll(listEpisodesAdapter.getList());
                     if (listSubtraction.size() > 0) {
-                        AsyncUtil.RunnableAsyncTask dbTask = new AsyncUtil.RunnableAsyncTask(() -> {
-                            episodeViewModel.insert(listSubtraction);
-                        });
-                        dbTask.addOnFailureListener(e -> handleException(e, R.string.error_message_persist_episodes));
-                        dbTask.addOnCompleteListener(() -> progressBar.setVisibility(View.GONE));
+                        Util.Async.RunnableTask dbTask = new Util.Async.RunnableTask(() ->
+                                episodeViewModel.insert(listSubtraction));
+                        dbTask.addOnFailureListener(e ->
+                                handleException(e, R.string.error_persist_episodes));
+                        dbTask.addOnCompleteListener(() ->
+                                progressBar.setVisibility(View.GONE));
                         dbTask.execute();
                     } else {
                         runOnUiThread(() -> progressBar.setVisibility(View.GONE));
@@ -102,14 +109,14 @@ public class TVShowEpisodesActivity extends BaseActivity {
 
             @Override
             public void onFailure(Exception e) {
-                handleException(e, R.string.error_message_failed_load_episodes);
+                handleException(e, R.string.error_load_episodes);
             }
         });
     }
 
-    RecyclerViewItemClick listEpisodesItemClickListener = new RecyclerViewItemClick() {
+    RecyclerViewItemShortClick listEpisodesItemClickListener = new RecyclerViewItemShortClick() {
         @Override
-        public void onItemClick(View v, int position) {
+        public void onItemShortClick(View v, int position) {
             Episode episode = listEpisodesAdapter.getItem(position);
 
             Intent episodeActivityIntent = new Intent(TVShowEpisodesActivity.this, TVShowSubtitlesActivity.class);

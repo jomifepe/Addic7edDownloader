@@ -10,10 +10,15 @@ import android.os.Parcelable;
 import java.util.Locale;
 import java.util.Objects;
 
-@Entity(foreignKeys = { @ForeignKey(entity = Episode.class,
-                                    parentColumns = "id",
-                                    childColumns = "episodeId") },
-        indices = { @Index(value = "episodeId") })
+@Entity(tableName = "Subtitles",
+        foreignKeys = {
+                @ForeignKey(entity = Episode.class,
+                            parentColumns = "id",
+                            childColumns = "episodeId")
+        },
+        indices = {
+            @Index(value = "episodeId")
+        })
 
 public class Subtitle extends Record implements Parcelable {
     /* Database specific attributes */
