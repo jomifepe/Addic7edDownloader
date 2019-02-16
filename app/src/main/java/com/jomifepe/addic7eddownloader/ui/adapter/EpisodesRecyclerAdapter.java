@@ -1,7 +1,7 @@
 package com.jomifepe.addic7eddownloader.ui.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, EpisodesRecyclerAdapter.EpisodesRecyclerViewHolder> {
+public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, EpisodesRecyclerAdapter.ViewHolder> {
 
     public EpisodesRecyclerAdapter(RecyclerViewItemShortClick itemClickListener) {
         super(itemClickListener);
@@ -24,26 +24,26 @@ public class EpisodesRecyclerAdapter extends BaseRecyclerAdapter<Episode, Episod
 
     @NonNull
     @Override
-    public EpisodesRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_episodes, parent, false);
-        EpisodesRecyclerViewHolder viewHolder = new EpisodesRecyclerViewHolder(view);
+        ViewHolder viewHolder = new ViewHolder(view);
         view.setOnClickListener(v -> itemClickListener.onItemShortClick(v, viewHolder.getLayoutPosition()));
 
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull EpisodesRecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Episode episode = listData.get(position);
         holder.txtNumber.setText(String.format(Locale.getDefault(), "Episode %d", episode.getNumber()));
         holder.txtTitle.setText(episode.getTitle());
     }
 
-    static class EpisodesRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.item_list_episodes_txtNumber) TextView txtNumber;
         @BindView(R.id.item_list_episodes_txtTitle) TextView txtTitle;
 
-        public EpisodesRecyclerViewHolder(View view) {
+        public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

@@ -1,7 +1,12 @@
 package com.jomifepe.addic7eddownloader.model;
 
-import android.arch.persistence.room.PrimaryKey;
+import android.os.Parcelable;
 
+import org.parceler.Parcel;
+
+import androidx.room.PrimaryKey;
+
+@Parcel
 public class Record {
     @PrimaryKey(autoGenerate = true) public Integer id;
 

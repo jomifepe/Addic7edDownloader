@@ -1,6 +1,6 @@
 package com.jomifepe.addic7eddownloader.model.persistence.typeconverter;
 
-import android.arch.persistence.room.TypeConverter;
+import androidx.room.TypeConverter;
 
 import com.jomifepe.addic7eddownloader.model.MediaType;
 

@@ -1,41 +1,42 @@
 package com.jomifepe.addic7eddownloader.model;
 
-import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Movie extends Media implements Parcelable {
+import org.parceler.Parcel;
+import org.parceler.Parcel.Serialization;
+import org.parceler.ParcelConstructor;
 
-    public Movie(String title, Integer id, String imageURL) {
-        super(id, title, MediaType.MOVIE, imageURL);
+import java.util.Objects;
+
+@Parcel(Serialization.BEAN)
+public class Movie extends Media implements Content {
+    private String pageUrl;
+
+    @ParcelConstructor
+    public Movie(Integer id, Integer addic7edId, String title, MediaType type, String posterURL,
+                 String pageUrl) {
+        super(id, addic7edId, title, type, posterURL);
+        this.pageUrl = pageUrl;
     }
 
-    public Movie(String title, Integer id) {
-        super(id, title, MediaType.MOVIE, null);
+    public Movie(Integer addic7edId, String title, MediaType type, String posterURL,
+                 String pageUrl) {
+        super(addic7edId, title, type, posterURL);
+        this.pageUrl = pageUrl;
     }
 
-    protected Movie(Parcel in) {
-        super(in);
-    }
-
-    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
-        @Override
-        public Movie createFromParcel(Parcel in) {
-            return new Movie(in);
-        }
-
-        @Override
-        public Movie[] newArray(int size) {
-            return new Movie[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
+    public Movie(Integer addic7edId, String title, MediaType type, String pageUrl) {
+        super(addic7edId, title, type);
+        this.pageUrl = pageUrl;
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        super.writeToParcel(parcel, i);
+    public String getPageUrl() {
+        return pageUrl;
+    }
+
+    public Movie setPageUrl(String pageUrl) {
+        this.pageUrl = pageUrl;
+        return this;
     }
 }

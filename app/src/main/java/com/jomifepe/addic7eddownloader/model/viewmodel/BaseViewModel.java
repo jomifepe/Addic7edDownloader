@@ -1,12 +1,14 @@
 package com.jomifepe.addic7eddownloader.model.viewmodel;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.LiveData;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.annotation.NonNull;
 
 import com.jomifepe.addic7eddownloader.model.Record;
 import com.jomifepe.addic7eddownloader.model.persistence.BaseDao;
+
+import org.parceler.Parcel;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_fragment_shows">Shows</string>
-    <string name="title_fragment_search">Search</string>
+    <string name="label_search">Search</string>
     <string name="title_fragment_favorites">Favorites</string>
     <string name="title_activity_preferences">Preferences</string>
 
@@ -34,7 +34,7 @@
     <string name="error_generic">An unexpected error occurred</string>
     <string name="error_default_load_addic7ed_shows">An unexpected error occurred while fetching data from Addic7ed</string>
     <string name="error_persist_episodes">Failed to locally save episodes</string>
-    <string name="error_load_episodes">Failed to load season episodes</string>
+    <string name="error_load_episodes">Failed to load seasonNumber episodes</string>
     <string name="error_persist_seasons">Failed to locally save tv show seasons</string>
     <string name="error_load_seasons">Failed to load tv show seasons</string>
     <string name="error_download_subtitle">Failed to download subtitle file</string>
@@ -61,7 +61,6 @@
     <string name="hint_filter_shows">Filter Shows</string>
     <string name="hint_filter_favorites">Filter favorites</string>
 
-    <string name="intent_extra_tv_show" translatable="false">com.jomifepe.addic7eddownloader.ui.TVSHOW</string>
     <string name="title_pref_category_general">General</string>
     <string name="key_pref_general_default_screen" translatable="false">pref_general_default_screen</string>
     <string name="title_pref_general_default_screen">Default screen</string>
@@ -69,4 +68,10 @@
     <string name="msg_empty_shows">No shows to display</string>
     <string name="label_delete">Delete</string>
     <string name="msg_delete_favorite">Do you want to remove this show from your favorites?</string>
+    <string name="hint_search_field">Search Addic7ed</string>
+    <string name="label_search_helper">Search like you would on Addic7ed</string>
+    <string name="error_search_addic7ed">Failed to search Addic7ed</string>
+    <string name="label_search_no_results">No results</string>
+    <string name="label_show">Show</string>
+    <string name="label_movie">Movie</string>
 </resources>

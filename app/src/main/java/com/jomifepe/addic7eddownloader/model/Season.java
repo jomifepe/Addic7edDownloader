@@ -1,15 +1,20 @@
 package com.jomifepe.addic7eddownloader.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
-import android.os.Parcel;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Ignore;
+import androidx.room.Index;
+
 import android.os.Parcelable;
+
+import org.parceler.Parcel;
+import org.parceler.Parcel.Serialization;
+import org.parceler.ParcelConstructor;
 
 import java.util.Locale;
 import java.util.Objects;
 
+@Parcel(Serialization.BEAN)
 @Entity(tableName = "Seasons",
         foreignKeys = {
             @ForeignKey(entity = Show.class,
@@ -19,14 +24,14 @@ import java.util.Objects;
         indices = {
             @Index(value = "showId")
         })
-
-public class Season extends Record implements Parcelable {
+public class Season extends Record {
     /* Database specific attributes */
     private Integer showId;
 
     private Integer number;
     private Integer numberOfEpisodes;
 
+    @ParcelConstructor
     public Season(Integer id, Integer showId, Integer number, Integer numberOfEpisodes) {
         super(id);
         this.showId = showId;
@@ -41,90 +46,36 @@ public class Season extends Record implements Parcelable {
         this.numberOfEpisodes = numberOfEpisodes;
     }
 
-    @Override
-    public String toString() {
-        return String.format(Locale.getDefault(), "Season %d", number);
-    }
-
     public Integer getShowId() {
         return showId;
+    }
+
+    public Season setShowId(Integer showId) {
+        this.showId = showId;
+        return this;
     }
 
     public Integer getNumber() {
         return number;
     }
 
+    public Season setNumber(Integer number) {
+        this.number = number;
+        return this;
+    }
+
     public Integer getNumberOfEpisodes() {
         return numberOfEpisodes;
     }
 
-    @Ignore
-    protected Season(Parcel in) {
-        if (in.readByte() == 0) {
-            id = null;
-        } else {
-            id = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            showId = null;
-        } else {
-            showId = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            number = null;
-        } else {
-            number = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            numberOfEpisodes = null;
-        } else {
-            numberOfEpisodes = in.readInt();
-        }
-    }
-
-    public static final Creator<Season> CREATOR = new Creator<Season>() {
-        @Override
-        public Season createFromParcel(Parcel in) {
-            return new Season(in);
-        }
-
-        @Override
-        public Season[] newArray(int size) {
-            return new Season[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
+    public Season setNumberOfEpisodes(Integer numberOfEpisodes) {
+        this.numberOfEpisodes = numberOfEpisodes;
+        return this;
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        if (id == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(id);
-        }
-        if (showId == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(showId);
-        }
-        if (number == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(number);
-        }
-        if (numberOfEpisodes == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(numberOfEpisodes);
-        }
+    public String toString() {
+        return String.format(Locale.getDefault(), "Season %d", number);
     }
 
     @Override

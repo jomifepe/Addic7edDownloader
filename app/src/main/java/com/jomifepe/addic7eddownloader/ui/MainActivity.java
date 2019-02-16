@@ -3,40 +3,34 @@ package com.jomifepe.addic7eddownloader.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
-import android.widget.SearchView;
 
 import com.jomifepe.addic7eddownloader.R;
 import com.jomifepe.addic7eddownloader.ui.listener.FragmentLoadListener;
-import com.jomifepe.addic7eddownloader.util.Util;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 
 public class MainActivity
         extends BaseActivity
-        implements FragmentLoadListener{
+        implements FragmentLoadListener {
 
     @BindView(R.id.layout_main) FrameLayout fragmentContainer;
-    @BindView(R.id.bnv_main_navigation) BottomNavigationView bottomNavigationView;
+    @BindView(R.id.bnv_main_navigation) BottomNavigationView navigation;
 
-    private FragmentManager fragmentManager;
-    private MenuItem menuSearchItem;
-    private SearchView menuSearchView;
+    protected FragmentManager fragmentManager;
     private boolean isTransitioning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
-
-        bottomNavigationView.setOnNavigationItemSelectedListener(navItemClickListener);
+        navigation.setOnNavigationItemSelectedListener(navItemClickListener);
 
         String defaultSectionName = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(getString(R.string.key_pref_general_default_screen), Section.SHOWS.name());
@@ -62,8 +56,6 @@ public class MainActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        menuSearchItem = menu.findItem(R.id.mi_main_shows_filter);
-        menuSearchView = (SearchView) menuSearchItem.getActionView();
         return true;
     }
 
@@ -141,7 +133,7 @@ public class MainActivity
     }
 
     private void selectNavigation(Section section) {
-        bottomNavigationView.getMenu().getItem(section.ordinal()).setChecked(true);
+        navigation.getMenu().getItem(section.ordinal()).setChecked(true);
     }
 
     private boolean isCurrentSection(Section section) {

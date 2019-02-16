@@ -1,143 +1,106 @@
 package com.jomifepe.addic7eddownloader.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
-import android.os.Parcel;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Ignore;
+import androidx.room.Index;
+
 import android.os.Parcelable;
+
+import org.parceler.Parcel;
+import org.parceler.Parcel.Serialization;
+import org.parceler.ParcelConstructor;
 
 import java.util.Objects;
 
-
+@Parcel(Serialization.BEAN)
 @Entity(tableName = "Episodes",
         foreignKeys = {
-            @ForeignKey(entity = Season.class,
+                @ForeignKey(entity = Season.class,
                         parentColumns = "id",
                         childColumns = "seasonId")
-            },
+        },
         indices = {
-            @Index(value = "seasonId")
+                @Index(value = "seasonId")
         })
-
-public class Episode extends Record implements Parcelable {
+public class Episode extends Record implements Content {
     /* Database specific attributes */
+    private String pageURL;
     private Integer seasonId;
 
     private String title;
-    private Integer season;
+    private Integer seasonNumber;
     private Integer number;
-    private String pageURL;
 
-    public Episode(Integer id, Integer seasonId, String title, Integer season, Integer number, String pageURL) {
+    @ParcelConstructor
+    public Episode(Integer id, Integer seasonId, String title, Integer seasonNumber, Integer number,
+                   String pageURL) {
         super(id);
         this.seasonId = seasonId;
         this.title = title;
-        this.season = season;
+        this.seasonNumber = seasonNumber;
         this.number = number;
         this.pageURL = pageURL;
     }
 
     @Ignore
-    public Episode(Integer seasonId, String title, Integer season, Integer number, String pageURL) {
+    public Episode(Integer seasonId, String title, Integer seasonNumber, Integer number,
+                   String pageURL) {
         this.seasonId = seasonId;
         this.title = title;
-        this.season = season;
+        this.seasonNumber = seasonNumber;
         this.number = number;
         this.pageURL = pageURL;
-    }
-
-    public Integer getSeasonId() {
-        return seasonId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Integer getSeason() {
-        return season;
-    }
-
-    public Integer getNumber() {
-        return number;
     }
 
     public String getPageURL() {
         return pageURL;
     }
 
-    @Ignore
-    protected Episode(Parcel in) {
-        if (in.readByte() == 0) {
-            id = null;
-        } else {
-            id = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            seasonId = null;
-        } else {
-            seasonId = in.readInt();
-        }
-        title = in.readString();
-        if (in.readByte() == 0) {
-            season = null;
-        } else {
-            season = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            number = null;
-        } else {
-            number = in.readInt();
-        }
-        pageURL = in.readString();
+    public Episode setPageURL(String pageURL) {
+        this.pageURL = pageURL;
+        return this;
     }
 
-    public static final Creator<Episode> CREATOR = new Creator<Episode>() {
-        @Override
-        public Episode createFromParcel(Parcel in) {
-            return new Episode(in);
-        }
+    public Integer getSeasonId() {
+        return seasonId;
+    }
 
-        @Override
-        public Episode[] newArray(int size) {
-            return new Episode[size];
-        }
-    };
+    public Episode setSeasonId(Integer seasonId) {
+        this.seasonId = seasonId;
+        return this;
+    }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public String getTitle() {
+        return title;
+    }
+
+    public Episode setTitle(String title) {
+        this.title = title;
+        return this;
+    }
+
+    public Integer getSeasonNumber() {
+        return seasonNumber;
+    }
+
+    public Episode setSeasonNumber(Integer seasonNumber) {
+        this.seasonNumber = seasonNumber;
+        return this;
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
+
+    public Episode setNumber(Integer number) {
+        this.number = number;
+        return this;
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        if (id == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(id);
-        }
-        if (seasonId == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(seasonId);
-        }
-        parcel.writeString(title);
-        if (season == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(season);
-        }
-        if (number == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(number);
-        }
-        parcel.writeString(pageURL);
+    public String getPageUrl() {
+        return pageURL;
     }
 
     @Override
@@ -147,7 +110,7 @@ public class Episode extends Record implements Parcelable {
         Episode episode = (Episode) o;
         return Objects.equals(seasonId, episode.seasonId) &&
                 Objects.equals(title, episode.title) &&
-                Objects.equals(season, episode.season) &&
+                Objects.equals(seasonNumber, episode.seasonNumber) &&
                 Objects.equals(number, episode.number) &&
                 Objects.equals(pageURL, episode.pageURL);
     }
@@ -155,7 +118,8 @@ public class Episode extends Record implements Parcelable {
     @Override
     public int hashCode() {
 
-        return Objects.hash(seasonId, title, season, number, pageURL);
+        return Objects.hash(seasonId, title, seasonNumber, number, pageURL);
     }
 }
+
 

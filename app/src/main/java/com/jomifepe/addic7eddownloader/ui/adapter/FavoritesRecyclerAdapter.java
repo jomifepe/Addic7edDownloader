@@ -1,7 +1,7 @@
 package com.jomifepe.addic7eddownloader.ui.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,16 +26,12 @@ public class FavoritesRecyclerAdapter
         extends BaseRecyclerAdapter<Show, FavoritesRecyclerAdapter.ViewHolder>
         implements Filterable {
 
-    private RecyclerViewItemLongClick itemLongClickListener;
-
     public static final int RESULTS_PER_PAGE = 30;
     private List<Show> originalList;
     private List<Show> filteredList;
 
-    public FavoritesRecyclerAdapter(RecyclerViewItemShortClick itemShortClickListener,
-                                    RecyclerViewItemLongClick itemLongClickListener) {
+    public FavoritesRecyclerAdapter(RecyclerViewItemShortClick itemShortClickListener) {
         super(itemShortClickListener);
-        this.itemLongClickListener = itemLongClickListener;
     }
 
     public List<Show> getOriginalList() {
@@ -72,8 +68,6 @@ public class FavoritesRecyclerAdapter
         ViewHolder viewHolder = new ViewHolder(view);
         view.setOnClickListener(v -> itemClickListener
                 .onItemShortClick(v, viewHolder.getLayoutPosition()));
-        view.setOnLongClickListener(v -> itemLongClickListener
-            .onItemLongClick(v, viewHolder.getLayoutPosition()));
 
         return viewHolder;
     }
@@ -115,7 +109,7 @@ public class FavoritesRecyclerAdapter
         };
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.item_list_favorites_id) TextView txtId;
         @BindView(R.id.item_list_favorites_title) TextView txtTitle;
         @BindView(R.id.item_list_favorites_view_foreground) RelativeLayout viewForeground;

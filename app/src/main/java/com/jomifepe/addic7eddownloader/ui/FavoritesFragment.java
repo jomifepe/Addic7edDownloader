@@ -2,15 +2,17 @@ package com.jomifepe.addic7eddownloader.ui;
 
 
 import android.app.Dialog;
-import android.arch.lifecycle.ViewModelProviders;
-import android.content.DialogInterface;
+
+import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProviders;
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,16 +27,17 @@ import com.jomifepe.addic7eddownloader.model.Show;
 import com.jomifepe.addic7eddownloader.model.viewmodel.FavoriteViewModel;
 import com.jomifepe.addic7eddownloader.ui.adapter.FavoritesRecyclerAdapter;
 import com.jomifepe.addic7eddownloader.ui.adapter.FavoritesRecyclerItemTouchHelper;
-import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemLongClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
+import com.jomifepe.addic7eddownloader.util.Const;
 import com.jomifepe.addic7eddownloader.util.Util;
 import com.jomifepe.addic7eddownloader.util.listener.OnCompleteListener;
 import com.jomifepe.addic7eddownloader.util.listener.OnFailureListener;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class FavoritesFragment extends BaseFragment {
     @BindView(R.id.rv_favorites) RecyclerView rvFavorites;
@@ -48,13 +51,12 @@ public class FavoritesFragment extends BaseFragment {
     public FavoritesFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_favorites, container, false);
-        ButterKnife.bind(this, view);
+    protected void onCreateViewActions(@NonNull LayoutInflater inflater,
+                                       @Nullable ViewGroup container,
+                                       @Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true);
 
-        listAdapter = new FavoritesRecyclerAdapter(favoriteShortClick, favoriteLongClick);
+        listAdapter = new FavoritesRecyclerAdapter(favoriteShortClick);
         rvFavorites.setAdapter(listAdapter);
         rvFavorites.setLayoutManager(listLayoutManager = new LinearLayoutManager(getViewContext()));
         rvFavorites.addOnScrollListener(favoritesScrollListener);
@@ -72,7 +74,11 @@ public class FavoritesFragment extends BaseFragment {
 
         observeFavoritesViewModel();
         onFragmentLoad();
-        return view;
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.fragment_favorites;
     }
 
     @Override
@@ -107,17 +113,9 @@ public class FavoritesFragment extends BaseFragment {
 
     RecyclerViewItemShortClick favoriteShortClick = (view, position) -> {
         Show show = listAdapter.getList().get(position);
-        Intent tvShowActivityIntent = new Intent(getActivity(), TVShowSeasonsActivity.class);
-        tvShowActivityIntent.putExtra(getString(R.string.intent_extra_tv_show), show);
+        Intent tvShowActivityIntent = new Intent(getActivity(), SeasonsActivity.class);
+        tvShowActivityIntent.putExtra(Const.Activity.EXTRA_SHOW, Parcels.wrap(show));
         startActivity(tvShowActivityIntent);
-    };
-
-    RecyclerViewItemLongClick favoriteLongClick = (view, position) -> {
-        Show selectedShow = listAdapter.getItem(position);
-        removeShowFromFavorites(selectedShow,
-                () -> Util.Message.sToast(getViewContext(), R.string.msg_success_remove_favorites),
-                e -> handleException(e, R.string.error_remove_show_favorites));
-        return true;
     };
 
     RecyclerView.OnScrollListener favoritesScrollListener = new RecyclerView.OnScrollListener() {
@@ -158,14 +156,14 @@ public class FavoritesFragment extends BaseFragment {
                             },
                             e -> handleException(e, R.string.error_remove_show_favorites));
                     } else {
-                        listAdapter.notifyItemRemoved(position);
+                        listAdapter.notifyItemChanged(position);
                     }
                 }).show();
     };
 
     private void removeShowFromFavorites(Show show, OnCompleteListener completeListener,
                                          OnFailureListener failureListener) {
-        new Util.Async.RunnableTask(() -> favoritesViewModel.deleteShowById(show.getAddic7edId()))
+        new Util.Async.Task(() -> favoritesViewModel.deleteShowById(show.getAddic7edId()))
                 .addOnCompleteListener(completeListener)
                 .addOnFailureListener(failureListener)
                 .execute();

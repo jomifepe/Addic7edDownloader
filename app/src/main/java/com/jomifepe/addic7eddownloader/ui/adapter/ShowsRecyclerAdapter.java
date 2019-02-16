@@ -1,7 +1,7 @@
 package com.jomifepe.addic7eddownloader.ui.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +14,8 @@ import com.jomifepe.addic7eddownloader.model.Show;
 import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemLongClick;
 import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 
+import org.parceler.Parcel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +24,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ShowsRecyclerAdapter
-        extends BaseRecyclerAdapter<Show, ShowsRecyclerAdapter.TVShowsRecyclerViewHolder>
+        extends BaseRecyclerAdapter<Show, ShowsRecyclerAdapter.ViewHolder>
         implements Filterable {
 
     private RecyclerViewItemLongClick itemLongClickListener;
@@ -65,10 +67,10 @@ public class ShowsRecyclerAdapter
 
     @NonNull
     @Override
-    public TVShowsRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_list_shows, parent, false);
-        TVShowsRecyclerViewHolder viewHolder = new TVShowsRecyclerViewHolder(view);
+        ViewHolder viewHolder = new ViewHolder(view);
         view.setOnClickListener(v -> itemClickListener
                 .onItemShortClick(v, viewHolder.getLayoutPosition()));
         view.setOnLongClickListener(v -> itemLongClickListener
@@ -78,7 +80,7 @@ public class ShowsRecyclerAdapter
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TVShowsRecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Show show = listData.get(position);
         holder.txtTitle.setText(show.getTitle());
         holder.txtId.setText(String.format(Locale.getDefault(), "%d", show.getAddic7edId()));
@@ -114,11 +116,11 @@ public class ShowsRecyclerAdapter
         };
     }
 
-    static class TVShowsRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.item_list_tvshows_txtId) TextView txtId;
         @BindView(R.id.item_list_tvshows_txtTitle) TextView txtTitle;
 
-        public TVShowsRecyclerViewHolder(View view) {
+        public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

@@ -9,14 +9,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.annotation.StringRes;
-import android.support.annotation.StyleRes;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.util.Pair;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.StringRes;
+import androidx.annotation.StyleRes;
+import androidx.core.app.NotificationCompat;
+import androidx.core.util.Pair;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
@@ -27,14 +31,188 @@ import com.jomifepe.addic7eddownloader.ui.adapter.MultiOptionListRecyclerAdapter
 import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 import com.jomifepe.addic7eddownloader.util.listener.OnCompleteListener;
 import com.jomifepe.addic7eddownloader.util.listener.OnFailureListener;
+import com.jomifepe.addic7eddownloader.util.listener.OnResultListener;
 import com.jomifepe.addic7eddownloader.util.listener.OnTaskEndedListener;
 
+import org.jsoup.HttpStatusException;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class Util {
+    public static class Network {
+        public static class HTTPGETRequest {
+            private final OkHttpClient client;
+            private final String targetURL;
+
+            public HTTPGETRequest(String url) {
+                this.targetURL = url;
+                this.client = new OkHttpClient.Builder()
+                        .connectTimeout(5, TimeUnit.SECONDS)
+                        .writeTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(10, TimeUnit.SECONDS)
+                        .build();
+            }
+
+            public String execute() throws IOException, NullPointerException {
+                Request request = new Request.Builder()
+                        .url(targetURL)
+                        .header("User-Agent", Const.USER_AGENT)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    throw new HttpStatusException(response.body().string(), response.code(), targetURL);
+                }
+                return response.body().string();
+            }
+        }
+
+        public static class AsyncHTTPGETRequest extends AsyncTask<Void, Void, AsyncTaskResult<String>> {
+            private final OkHttpClient client;
+            private OnResultListener<String> resultListener;
+            private OnFailureListener failureListener;
+            private final String target;
+
+            public AsyncHTTPGETRequest(String target) {
+                this.target = target;
+                this.client = new OkHttpClient.Builder()
+                        .connectTimeout(5, TimeUnit.SECONDS)
+                        .writeTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(10, TimeUnit.SECONDS)
+                        .build();
+            }
+
+            public AsyncHTTPGETRequest addOnCompleteListener(OnResultListener<String> listener) {
+                this.resultListener = listener;
+                return this;
+            }
+
+            public AsyncHTTPGETRequest addOnFailureListener(OnFailureListener listener) {
+                this.failureListener = listener;
+                return this;
+            }
+
+            @Override
+            protected AsyncTaskResult<String> doInBackground(Void... voids) {
+                Request request = new Request.Builder()
+                        .url(target)
+                        .header("User-Agent", Const.USER_AGENT)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    if (!response.isSuccessful()) {
+                        throw new HttpStatusException(response.body().string(), response.code(), target);
+                    }
+                    return new AsyncTaskResult<>(response.body().string());
+                } catch (NullPointerException | IOException e) {
+                    return new AsyncTaskResult<>(e);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(AsyncTaskResult<String> result) {
+                if (result.hasError()) {
+                    Exception error = result.getError();
+                    if (failureListener != null) {
+                        failureListener.onFailure(error);
+                    }
+                    Util.Log.logD(getClass().getName(),
+                            "HTTP GET Request failed for " + target + ": " + error.getMessage());
+                } else {
+                    if (resultListener != null) {
+                        resultListener.onComplete(result.getResult());
+                    }
+                }
+            }
+        }
+
+        public static class FileDownload extends AsyncTask<Void, Void, AsyncTaskResult<String>> {
+            private OnResultListener<String> resultListener;
+            private OnFailureListener failureListener;
+            private final String targetUrl;
+            private final String refererUrl;
+            private final String savePath;
+
+            public FileDownload(String targetUrl, String refererUrl, String savePath) {
+                this.targetUrl = targetUrl;
+                this.refererUrl = refererUrl;
+                this.savePath = savePath;
+            }
+
+            public FileDownload addOnCompleteListener(OnResultListener<String> listener) {
+                this.resultListener = listener;
+                return this;
+            }
+
+            public FileDownload addOnFailureListener(OnFailureListener listener) {
+                this.failureListener = listener;
+                return this;
+            }
+
+            @Override
+            protected AsyncTaskResult<String> doInBackground(Void... voids) {
+                try {
+                    URL url = new URL(targetUrl);
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("GET");
+                    con.setRequestProperty("User-Agent", Const.USER_AGENT);
+                    con.setRequestProperty("Referer", refererUrl);
+
+                    int responseCode = con.getResponseCode();
+                    if (responseCode != HttpURLConnection.HTTP_OK) {
+                        throw new HttpStatusException("Addic7ed failed",
+                                HttpURLConnection.HTTP_OK, url.toString());
+                    }
+
+                    String contentDisposition = con.getHeaderField("Content-Disposition");
+                    String filename = contentDisposition == null ?
+                            "subtitle.srt" : contentDisposition.replaceFirst(
+                                    "(?i)^.*filename=\"?([^\"]+)\"?.*$", "$1");
+
+                    ReadableByteChannel rbc = Channels.newChannel(con.getInputStream());
+
+                    String filePath = savePath + File.separator + filename;
+                    FileOutputStream fos = new FileOutputStream(filePath);
+                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+
+                    fos.close();
+                    rbc.close();
+
+                    return new AsyncTaskResult<>(filename);
+                } catch (Exception e) {
+                    return new AsyncTaskResult<>(e);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(AsyncTaskResult<String> result) {
+                if (result.hasError()) {
+                    Exception error = result.getError();
+                    if (failureListener != null) {
+                        failureListener.onFailure(error);
+                    }
+                    Util.Log.logD(getClass().getSimpleName(),
+                            "File download failed: " + error.getMessage());
+                } else {
+                    if (resultListener != null) {
+                        resultListener.onComplete(result.getResult());
+                    }
+                }
+            }
+        }
+    }
+
     public static class Log {
         public static final String DEBUG_TAG = "[ADD7DOWNLOADER_DEBUG]: ";
 
@@ -274,14 +452,13 @@ public class Util {
     }
 
     public static class Async {
-        public static class RunnableTask extends AsyncTask<Void, Void, Boolean> {
+        public static class Task extends AsyncTask<Void, Void, AsyncTaskResult<Boolean>> {
             private OnFailureListener failureListener;
             private OnCompleteListener completionListener;
             private OnTaskEndedListener taskEndedListener;
             private Runnable runnable;
-            private Exception runnableException;
 
-            public RunnableTask(Runnable runnable) {
+            public Task(Runnable runnable) {
                 this.runnable = runnable;
             }
 
@@ -290,7 +467,7 @@ public class Util {
              * @param listener
              * @return RunnableTask
              */
-            public RunnableTask addOnCompleteListener(OnCompleteListener listener) {
+            public Task addOnCompleteListener(OnCompleteListener listener) {
                 this.completionListener = listener;
                 return this;
             }
@@ -300,7 +477,7 @@ public class Util {
              * @param listener
              * @return RunnableTask
              */
-            public RunnableTask addOnFailureListener(OnFailureListener listener) {
+            public Task addOnFailureListener(OnFailureListener listener) {
                 this.failureListener = listener;
                 return this;
             }
@@ -310,31 +487,30 @@ public class Util {
              * @param listener
              * @return RunnableTask
              */
-            public RunnableTask addOnTaskEndedListener(OnTaskEndedListener listener) {
+            public Task addOnTaskEndedListener(OnTaskEndedListener listener) {
                 this.taskEndedListener = listener;
                 return this;
             }
 
             @Override
-            protected Boolean doInBackground(Void... voids) {
+            protected AsyncTaskResult<Boolean> doInBackground(Void... voids) {
                 try {
                     runnable.run();
+                    return new AsyncTaskResult<>(true);
                 } catch (Exception e) {
-                    runnableException = e;
-                    return false;
+                    return new AsyncTaskResult<>(e);
                 }
-                return true;
             }
 
             @Override
-            protected void onPostExecute(Boolean success) {
-                if (success) {
-                    if (completionListener != null) {
-                        completionListener.onComplete();
+            protected void onPostExecute(AsyncTaskResult<Boolean> result) {
+                if (result.hasError()) {
+                    if (failureListener != null) {
+                        failureListener.onFailure(result.getError());
                     }
                 } else {
-                    if (failureListener != null && runnableException != null) {
-                        failureListener.onFailure(runnableException);
+                    if (completionListener != null) {
+                        completionListener.onComplete();
                     }
                 }
 

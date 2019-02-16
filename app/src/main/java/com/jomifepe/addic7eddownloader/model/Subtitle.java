@@ -1,28 +1,32 @@
 package com.jomifepe.addic7eddownloader.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.ForeignKey;
-import android.arch.persistence.room.Ignore;
-import android.arch.persistence.room.Index;
-import android.os.Parcel;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.Ignore;
+import androidx.room.Index;
+
 import android.os.Parcelable;
+
+import org.parceler.Parcel;
+import org.parceler.ParcelConstructor;
+import org.parceler.Parcel.Serialization;
 
 import java.util.Locale;
 import java.util.Objects;
 
+@Parcel(Serialization.BEAN)
 @Entity(tableName = "Subtitles",
         foreignKeys = {
                 @ForeignKey(entity = Episode.class,
                             parentColumns = "id",
-                            childColumns = "episodeId")
+                            childColumns = "contentId")
         },
         indices = {
-            @Index(value = "episodeId")
+            @Index(value = "contentId")
         })
-
-public class Subtitle extends Record implements Parcelable {
-    /* Database specific attributes */
-    private Integer episodeId;
+public class Subtitle extends Record {
+    /* the id of an episode or movie */
+    private Integer contentId;
 
     private String language;
     private String version;
@@ -31,10 +35,11 @@ public class Subtitle extends Record implements Parcelable {
     private boolean hd;
     private String downloadURL;
 
-    public Subtitle(Integer id, Integer episodeId, String language, String version,
+    @ParcelConstructor
+    public Subtitle(Integer id, Integer contentId, String language, String version,
                     boolean corrected, boolean hearingImpaired, boolean hd, String downloadURL) {
         super(id);
-        this.episodeId = episodeId;
+        this.contentId = contentId;
         this.language = language;
         this.version = version;
         this.corrected = corrected;
@@ -44,9 +49,9 @@ public class Subtitle extends Record implements Parcelable {
     }
 
     @Ignore
-    public Subtitle(Integer episodeId, String language, String version,
+    public Subtitle(Integer contentId, String language, String version,
                     boolean corrected, boolean hearingImpaired, boolean hd, String downloadURL) {
-        this.episodeId = episodeId;
+        this.contentId = contentId;
         this.language = language;
         this.version = version;
         this.corrected = corrected;
@@ -56,37 +61,72 @@ public class Subtitle extends Record implements Parcelable {
     }
 
     @Ignore
-    public Subtitle(Integer episodeId, String language, String version,
+    public Subtitle(Integer contentId, String language, String version,
                     boolean corrected, boolean hearingImpaired, boolean hd) {
-        this(episodeId, language, version, corrected, hearingImpaired, hd, null);
+        this(contentId, language, version, corrected, hearingImpaired, hd, null);
     }
 
-    public Integer getEpisodeId() {
-        return episodeId;
+    public Integer getContentId() {
+        return contentId;
+    }
+
+    public Subtitle setContentId(Integer contentId) {
+        this.contentId = contentId;
+        return this;
     }
 
     public String getLanguage() {
         return language;
     }
 
+    public Subtitle setLanguage(String language) {
+        this.language = language;
+        return this;
+    }
+
     public String getVersion() {
         return version;
+    }
+
+    public Subtitle setVersion(String version) {
+        this.version = version;
+        return this;
     }
 
     public boolean isCorrected() {
         return corrected;
     }
 
+    public Subtitle setCorrected(boolean corrected) {
+        this.corrected = corrected;
+        return this;
+    }
+
     public boolean isHearingImpaired() {
         return hearingImpaired;
+    }
+
+    public Subtitle setHearingImpaired(boolean hearingImpaired) {
+        this.hearingImpaired = hearingImpaired;
+        return this;
     }
 
     public boolean isHd() {
         return hd;
     }
 
+    public Subtitle setHd(boolean hd) {
+        this.hd = hd;
+        return this;
+    }
+
     public String getDownloadURL() {
         return downloadURL;
+    }
+
+    public Subtitle setDownloadURL(String downloadURL) {
+        this.downloadURL = downloadURL;
+        return this;
     }
 
     @Override
@@ -94,65 +134,6 @@ public class Subtitle extends Record implements Parcelable {
         return String.format(Locale.getDefault(), "%s - %s%s%s%s",
                 getLanguage(), getVersion(), isHearingImpaired() ? " HI" : "",
                 isCorrected() ? " Corrected" : "", isHd() ? " 720/1080" : "");
-    }
-
-    @Ignore
-    protected Subtitle(Parcel in) {
-        if (in.readByte() == 0) {
-            id = null;
-        } else {
-            id = in.readInt();
-        }
-        if (in.readByte() == 0) {
-            episodeId = null;
-        } else {
-            episodeId = in.readInt();
-        }
-        language = in.readString();
-        version = in.readString();
-        corrected = in.readByte() != 0;
-        hearingImpaired = in.readByte() != 0;
-        hd = in.readByte() != 0;
-        downloadURL = in.readString();
-    }
-
-    public static final Creator<Subtitle> CREATOR = new Creator<Subtitle>() {
-        @Override
-        public Subtitle createFromParcel(Parcel in) {
-            return new Subtitle(in);
-        }
-
-        @Override
-        public Subtitle[] newArray(int size) {
-            return new Subtitle[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        if (id == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(id);
-        }
-        if (episodeId == null) {
-            parcel.writeByte((byte) 0);
-        } else {
-            parcel.writeByte((byte) 1);
-            parcel.writeInt(episodeId);
-        }
-        parcel.writeString(language);
-        parcel.writeString(version);
-        parcel.writeByte((byte) (corrected ? 1 : 0));
-        parcel.writeByte((byte) (hearingImpaired ? 1 : 0));
-        parcel.writeByte((byte) (hd ? 1 : 0));
-        parcel.writeString(downloadURL);
     }
 
     @Override
@@ -163,7 +144,7 @@ public class Subtitle extends Record implements Parcelable {
         return corrected == subtitle.corrected &&
                 hearingImpaired == subtitle.hearingImpaired &&
                 hd == subtitle.hd &&
-                Objects.equals(episodeId, subtitle.episodeId) &&
+                Objects.equals(contentId, subtitle.contentId) &&
                 Objects.equals(language, subtitle.language) &&
                 Objects.equals(version, subtitle.version) &&
                 Objects.equals(downloadURL, subtitle.downloadURL);
@@ -171,6 +152,6 @@ public class Subtitle extends Record implements Parcelable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(episodeId, language, version, corrected, hearingImpaired, hd, downloadURL);
+        return Objects.hash(contentId, language, version, corrected, hearingImpaired, hd, downloadURL);
     }
 }

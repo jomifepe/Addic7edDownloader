@@ -1,13 +1,13 @@
 package com.jomifepe.addic7eddownloader.ui;
 
 import android.content.Context;
-import android.support.annotation.ArrayRes;
-import android.support.v4.app.Fragment;
+import androidx.annotation.ArrayRes;
+import androidx.fragment.app.Fragment;
 
 import com.jomifepe.addic7eddownloader.R;
 
 public enum Section {
-    SHOWS(TVShowsFragment.class),
+    SHOWS(ShowsFragment.class),
     SEARCH(SearchFragment.class),
     FAVORITES(FavoritesFragment.class);
 

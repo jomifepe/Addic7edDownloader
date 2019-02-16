@@ -1,10 +1,10 @@
 package com.jomifepe.addic7eddownloader.model.viewmodel;
 
 import android.app.Application;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.annotation.NonNull;
 
 import com.jomifepe.addic7eddownloader.model.Episode;
 import com.jomifepe.addic7eddownloader.model.Subtitle;
@@ -14,11 +14,11 @@ import com.jomifepe.addic7eddownloader.model.persistence.SubtitleDao;
 import java.util.List;
 
 public class SubtitleViewModel extends BaseViewModel<Subtitle, SubtitleDao> {
-    public static class SubtitleViewModelFactory extends ViewModelProvider.NewInstanceFactory {
+    public static class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         private Application application;
         private Episode episode;
 
-        public SubtitleViewModelFactory(Application application, Episode episode) {
+        public ViewModelFactory(Application application, Episode episode) {
             this.episode = episode;
         }
 

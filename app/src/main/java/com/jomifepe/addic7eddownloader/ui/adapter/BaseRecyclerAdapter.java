@@ -1,11 +1,12 @@
 package com.jomifepe.addic7eddownloader.ui.adapter;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.jomifepe.addic7eddownloader.ui.adapter.listener.RecyclerViewItemShortClick;
 
+import org.parceler.Parcel;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder>
@@ -46,5 +47,9 @@ public abstract class BaseRecyclerAdapter<E, V extends RecyclerView.ViewHolder>
 
     public E getItem(int index) {
         return listData.get(index);
+    }
+
+    public void clearList() {
+        this.listData.clear();
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_main"
@@ -12,14 +12,12 @@
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent">-->
 
-
-
         <FrameLayout
             android:id="@+id/layout_main"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <com.jomifepe.addic7eddownloader.ui.CustomBottomNavigationView
+        <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bnv_main_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +26,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            app:layout_behavior="com.jomifepe.addic7eddownloader.ui.behavior.HideBottomViewOnScrollBehavior"
             app:menu="@menu/navigation"/>
 
     <!--</LinearLayout>-->
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

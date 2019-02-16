@@ -1,7 +1,7 @@
 package com.jomifepe.addic7eddownloader.ui.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsRecyclerAdapter.SeasonsRecyclerViewHolder> {
+public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsRecyclerAdapter.ViewHolder> {
 
     public SeasonsRecyclerAdapter(RecyclerViewItemShortClick itemClickListener) {
         super(itemClickListener);
@@ -24,16 +24,16 @@ public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsR
 
     @NonNull
     @Override
-    public SeasonsRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_seasons, parent, false);
-        SeasonsRecyclerViewHolder viewHolder = new SeasonsRecyclerViewHolder(view);
+        ViewHolder viewHolder = new ViewHolder(view);
         view.setOnClickListener(v -> itemClickListener.onItemShortClick(v, viewHolder.getLayoutPosition()));
 
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SeasonsRecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Season season = listData.get(position);
         holder.txtDescription.setText(String.format(Locale.getDefault(), "Season %d", season.getNumber()));
         Integer numberOfEpisodes = season.getNumberOfEpisodes();
@@ -45,11 +45,11 @@ public class SeasonsRecyclerAdapter extends BaseRecyclerAdapter<Season, SeasonsR
         }
     }
 
-    static class SeasonsRecyclerViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_item_list_seasons_description) TextView txtDescription;
         @BindView(R.id.tv_item_list_season_num_of_episodes) TextView txtNumOfEpisodes;
 
-        public SeasonsRecyclerViewHolder(View view) {
+        public ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }

@@ -7,12 +7,15 @@
     <color name="addic7ed">#009BCB</color>
     <color name="addic7edDarker">#0081A8</color>
 
-    <color name="colorMaterialGray300">#E0E0E0</color>
-    <color name="colorMaterialGray400">#BDBDBD</color>
     <color name="colorMaterialIndigoA200">#536DFE</color>
     <color name="colorMaterialRedA200">#ff5252</color>
     <color name="colorMaterialRedA400">#ff1744</color>
     <color name="colorMaterialRedA700">#d50000</color>
+    <color name="colorMaterialGray100">#F5F5F5</color>
+    <color name="colorMaterialGray200">#E0E0E0</color>
+    <color name="colorMaterialGray300">#E0E0E0</color>
+    <color name="colorMaterialGray400">#BDBDBD</color>
+    <color name="colorMaterialGray500">#9E9E9E</color>
     <color name="colorMaterialGray600">#757575</color>
     <color name="colorMaterialGray700">#616161</color>
     <color name="colorMaterialGray800">#424242</color>
